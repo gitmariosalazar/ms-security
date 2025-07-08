@@ -1,0 +1,323 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Security
+
+model UserType {
+  id_user_type     Int              @id @default(autoincrement()) @map("id_user_type")
+  name             String           @unique @map("name")
+  description      String           @map("description")
+  created_at       DateTime         @default(now()) @map("created_at")
+  updated_at       DateTime         @updatedAt @map("updated_at")
+  users            User[]           @relation("UserTypeUsers")
+  role_permissions RolePermission[] @relation("UserTypeRolePermissions")
+
+  @@map("user_type")
+}
+
+model Permission {
+  id_permission    Int              @id @default(autoincrement()) @map("id_permission")
+  name             String           @unique @map("name")
+  description      String           @map("description")
+  created_at       DateTime         @default(now()) @map("created_at")
+  updated_at       DateTime         @updatedAt @map("updated_at")
+  role_permissions RolePermission[] @relation("PermissionRolePermissions")
+
+  @@map("permission")
+}
+
+model RolePermission {
+  id_role_permission Int        @id @default(autoincrement()) @map("id_role_permission")
+  id_user_type       Int        @map("user_type")
+  id_permission      Int        @map("id_permission")
+  created_at         DateTime   @default(now()) @map("created_at")
+  updated_at         DateTime   @updatedAt @map("updated_at")
+  user_type          UserType   @relation("UserTypeRolePermissions", fields: [id_user_type], references: [id_user_type])
+  permission         Permission @relation("PermissionRolePermissions", fields: [id_permission], references: [id_permission])
+
+  @@index([id_user_type, id_permission], name: "idx_user_permission")
+  @@map("role_permissions")
+}
+
+model User {
+  id_user       Int                @id @default(autoincrement()) @map("id_user")
+  user_email    String             @unique @map("user_email")
+  user_password String             @map("user_password")
+  first_name    String             @map("first_name")
+  last_name     String             @map("last_name")
+  user_active   Boolean            @default(true) @map("user_active")
+  id_user_type  Int                @map("id_user_type")
+  created_at    DateTime           @default(now()) @map("created_at")
+  updated_at    DateTime           @updatedAt @map("updated_at")
+  user_type     UserType           @relation("UserTypeUsers", fields: [id_user_type], references: [id_user_type])
+  access_tokens AccessTokenModel[]
+
+  @@map("users")
+}
+
+// Notification
+
+model TypeNotification {
+  id_type_notification Int            @id @default(autoincrement()) @map("id_type_notification")
+  name                 String         @db.VarChar(100)
+  description          String?        @db.Text
+  created_at           DateTime       @default(now()) @map("created_at")
+  updated_at           DateTime       @updatedAt @map("updated_at")
+  notifications        Notification[]
+
+  @@map("type_notification")
+}
+
+model Priority {
+  id_priority   Int            @id @default(autoincrement()) @map("id_priority")
+  name          String         @db.VarChar(50)
+  description   String?        @db.Text
+  created_at    DateTime       @default(now()) @map("created_at")
+  updated_at    DateTime       @updatedAt @map("updated_at")
+  notifications Notification[]
+
+  @@map("priority")
+}
+
+model Notification {
+  id_notifications     Int       @id @default(autoincrement()) @map("id_notifications")
+  email                String?   @db.VarChar(100)
+  phone                String?   @db.VarChar(15)
+  subject              String?   @db.VarChar(150)
+  message              String    @db.Text
+  id_notification_type Int
+  id_status               Int
+  attempts             Int       @default(0)
+  sent_at              DateTime? @db.Timestamp(6)
+  created_at           DateTime  @default(now()) @db.Timestamp(6)
+  updated_at           DateTime  @updatedAt @db.Timestamp(6)
+  process_code         Int
+  id_priority          Int
+  logs_notification    Json?     @db.Json
+
+  process           Process          @relation(fields: [process_code], references: [id_process])
+  type_notification TypeNotification @relation(fields: [id_notification_type], references: [id_type_notification])
+  priority          Priority         @relation(fields: [id_priority], references: [id_priority])
+  status            Status?           @relation(fields: [id_status], references: [id_status])
+
+  @@index([id_notification_type], name: "idx_notification_type")
+  @@map("notifications")
+}
+
+model TypeService {
+  id_type_service Int       @id @default(autoincrement()) @map("id_type_service")
+  name            String    @db.VarChar(200)
+  description     String?   @db.Text
+  created_at      DateTime  @default(now()) @map("created_at")
+  updated_at      DateTime  @updatedAt @map("updated_at")
+  services        Service[]
+
+  @@map("type_service")
+}
+
+model Service {
+  id_service      Int         @id @default(autoincrement()) @map("id_service")
+  name            String      @db.VarChar(150)
+  description     String?     @db.Text
+  id_type_service Int
+  created_at      DateTime    @default(now()) @map("created_at")
+  updated_at      DateTime    @updatedAt @map("updated_at")
+  type_service    TypeService @relation(fields: [id_type_service], references: [id_type_service])
+
+  @@map("service")
+}
+
+model Entity {
+  id_entity   Int      @id @default(autoincrement()) @map("id_entity")
+  ruc         String   @db.VarChar(13)
+  name        String   @db.VarChar(150)
+  email       String   @db.VarChar(150)
+  cellphone   String   @db.VarChar(15)
+  telephone   String   @db.VarChar(15)
+  address     String   @db.VarChar(150)
+  description String?  @db.Text
+  created_at  DateTime @default(now()) @map("created_at")
+  updated_at  DateTime @updatedAt @map("updated_at")
+  process     Process[]
+  detail_invoice DetailInvoice[]
+
+  @@map("entity")
+}
+
+model TypeDocument {
+  id_type_document Int        @id @default(autoincrement()) @map("id_type_document")
+  title            String     @db.VarChar(255)
+  description      String?    @db.Text
+  created_at       DateTime   @default(now()) @map("created_at")
+  updated_at       DateTime   @updatedAt @map("updated_at")
+  document         Document[]
+
+  @@map("type_document")
+}
+
+model TypeStatus {
+  id_type_status Int      @id @default(autoincrement()) @map("id_type_status")
+  name           String   @db.VarChar(100)
+  description    String?  @db.Text
+  created_at     DateTime @default(now()) @map("created_at")
+  updated_at     DateTime @updatedAt @map("updated_at")
+  status         Status[]
+
+  @@map("type_status")
+}
+
+model Status {
+  id_status      Int             @id @default(autoincrement()) @map("id_status")
+  id_type_status Int
+  name           String          @db.VarChar(150)
+  description    String?         @db.Text
+  created_at     DateTime        @default(now()) @map("created_at")
+  updated_at     DateTime        @updatedAt @map("updated_at")
+  type_status    TypeStatus      @relation(fields: [id_type_status], references: [id_type_status])
+  process        Process[]
+  document       Document[]
+  detail_invoice  DetailInvoice[]
+  notification   Notification[]
+
+  @@map("status")
+}
+
+model Process {
+  id_process        Int                @id @default(autoincrement()) @map("id_process")
+  process_number    String             @map("process_number") @db.VarChar(100)
+  value             Decimal?           @db.Decimal(10, 2)
+  category          String             @db.VarChar(200)
+  id_entity            Int
+  description       String?            @db.Text
+  time_execution    String             @map("time_execution") @db.VarChar(150)
+  process_object    String             @db.VarChar(200)
+  email_manager     String?            @map("email_manager") @db.VarChar(100)
+  full_name_manager String?            @db.VarChar(100)
+  phone_manager     String?            @db.VarChar(15)
+  status_process    Int
+  is_active         Boolean
+  created_at        DateTime           @default(now()) @map("created_at")
+  updated_at        DateTime           @updatedAt @map("updated_at")
+  notification      Notification[]
+  id_status         Int
+  document          Document[]
+  detail_invoice    DetailInvoice[]
+  process_documents ProcessDocuments[]
+  process_peview    ProcessReview[]
+  status            Status?            @relation(fields: [id_status], references: [id_status])
+  entity            Entity             @relation(fields: [id_entity], references: [id_entity])
+
+  @@map("process")
+}
+
+model Document {
+  id_document       Int                @id @default(autoincrement()) @map("id_document")
+  id_type_document  Int
+  name              String             @db.VarChar(200)
+  description       String?            @db.Text
+  date_request      DateTime?          @db.Date
+  date_reception    DateTime?          @db.Date
+  name_manager      String?            @db.VarChar(150)
+  process_code      Int
+  document_link     String?            @db.VarChar(255)
+  id_status         Int
+  created_at        DateTime           @default(now()) @map("created_at")
+  updated_at        DateTime           @updatedAt @map("updated_at")
+  type_document     TypeDocument       @relation(fields: [id_type_document], references: [id_type_document])
+  process           Process            @relation(fields: [process_code], references: [id_process])
+  status            Status             @relation(fields: [id_status], references: [id_status])
+  detail_invoice    DetailInvoice[]
+  process_documents ProcessDocuments[]
+
+  @@map("document")
+}
+
+model PayType {
+  id_pay_type    Int             @id @default(autoincrement()) @map("id_pay_type")
+  name           String          @db.VarChar(150)
+  description    String?         @db.Text
+  created_at     DateTime        @default(now()) @map("created_at")
+  updated_at     DateTime        @updatedAt @map("updated_at")
+  detail_invoice DetailInvoice[]
+
+  @@map("pay_type")
+}
+
+model DetailInvoice {
+  id_detail_invoice    Int       @id @default(autoincrement()) @map("id_detail_invoice")
+  process_code         Int
+  total_value          Decimal   @db.Decimal(10, 2)
+  invoice_number       String    @db.VarChar(25)
+  id_entity               Int
+  description          String?   @db.Text
+  emission_date        DateTime? @db.Date
+  expiration_date      DateTime? @db.Date
+  email_responsibility String?   @db.VarChar(100)
+  id_pay_type          Int
+  id_document          Int
+  id_status            Int
+  created_at           DateTime  @default(now()) @map("created_at")
+  updated_at           DateTime  @updatedAt @map("updated_at")
+  process              Process   @relation(fields: [process_code], references: [id_process])
+  pay_type             PayType   @relation(fields: [id_pay_type], references: [id_pay_type])
+  status               Status    @relation(fields: [id_status], references: [id_status])
+  document             Document  @relation(fields: [id_document], references: [id_document])
+  entity               Entity    @relation(fields: [id_entity], references: [id_entity])
+
+  @@map("detail_invoice")
+}
+
+model ProcessDocuments {
+  id_process_document Int      @id @default(autoincrement()) @map("id_process_document")
+  process_code        Int
+  id_document         Int
+  observations        String?  @db.Text
+  created_at          DateTime @default(now()) @map("created_at")
+  updated_at          DateTime @updatedAt @map("updated_at")
+  process             Process  @relation(fields: [process_code], references: [id_process])
+  document            Document @relation(fields: [id_document], references: [id_document])
+
+  @@map("process_documents")
+}
+
+model ProcessReview {
+  id_process_review Int      @id @default(autoincrement()) @map("id_process_review")
+  is_active         Boolean
+  is_selected       Boolean
+  process_code      Int
+  created_at        DateTime @default(now()) @map("created_at")
+  updated_at        DateTime @updatedAt @map("updated_at")
+  process       Process  @relation(fields: [process_code], references: [id_process])
+
+  @@map("process_review")
+}
+
+model AccessTokenModel {
+  id_access_token     Int      @id @default(autoincrement()) @map("id_access_token")
+  id_user             Int
+  type_authentication String   @db.VarChar(50)
+  provider            String   @db.VarChar(50)
+  provider_account    String   @db.VarChar(50)
+  access_token        String   @db.Text
+  expires_at          Int
+  token_type          String   @db.VarChar(255)
+  scope               String   @db.VarChar(255)
+  token               String   @db.Text
+  created_at          DateTime @default(now()) @map("created_at")
+  updated_at          DateTime @updatedAt @map("updated_at")
+  user                User     @relation(fields: [id_user], references: [id_user])
+
+  @@map("access_token")
+}

@@ -1,0 +1,468 @@
+{
+  "editor.fontSize": 11.0,
+  "editor.cursorBlinking": "expand",
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.fontSize": 11,
+  "terminal.integrated.fontFamily": "Hack Nerd Font Mono",
+  "editor.tabSize": 2,
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.linkedEditing": true,
+  "notebook.stickyScroll.enabled": true,
+  "explorer.compactFolders": false,
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorWidth": 2,
+  "terminal.integrated.tabs.focusMode": "singleClick",
+  "editor.minimap.size": "proportional",
+  "editor.wrappingIndent": "same",
+  "editor.wordWrap": "wordWrapColumn",
+
+  "editor.wordWrapColumn": 120,
+
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": [
+          "variable",
+          "variable.parameter",
+          "entity.name.function",
+          "entity.name.variable"
+        ],
+        "settings": {
+          "fontStyle": "italic"
+        }
+      },
+      {
+        "scope": ["entity.name.type.config.prisma"],
+        "settings": {
+          "foreground": "#d61e1e",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": [
+          "keyword.operator.type.annotation.ts",
+          "storage.type.model.prisma"
+        ],
+        "settings": {
+          "foreground": "#1aff00",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": [
+          "keyword.operator.arithmetic.ts",
+          "keyword.operator.assignment.ts"
+        ],
+        "settings": {
+          "foreground": "#df7103",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": ["entity.name.type.interface"],
+        "settings": {
+          "foreground": "#3d72be"
+        }
+      },
+      {
+        "scope": ["constant.numeric.decimal.ts"],
+        "settings": {
+          "foreground": "#00d9ff"
+        }
+      },
+      {
+        "scope": ["variable.language.this.ts"],
+        "settings": {
+          "foreground": "#00ffee"
+        }
+      },
+      {
+        "scope": [
+          "variable.other.readwrite.alias.ts",
+          "storage.type.config.prisma"
+        ],
+        "settings": {
+          "foreground": "#e792dc"
+        }
+      },
+      {
+        "scope": ["string"],
+        "settings": {
+          "foreground": "#cdf184"
+        }
+      },
+      {
+        "scope": [
+          "keyword.operator.increment.ts",
+          "keyword.operator.decrement.ts",
+          "keyword.operator.assignment.compound.ts",
+          "storage.type.function.arrow.ts",
+          "entity.name.type.model.prisma"
+        ],
+        "settings": {
+          "foreground": "#005ff9"
+        }
+      },
+      {
+        "scope": ["constant.language.undefined.ts"],
+        "settings": {
+          "foreground": "#66bccd"
+        }
+      },
+      {
+        "scope": ["constant.language.null.ts"],
+        "settings": {
+          "foreground": "#d4b3ad"
+        }
+      },
+      {
+        "scope": ["entity.name.function"],
+        "settings": {
+          "foreground": "#f69e47"
+        }
+      },
+      {
+        "scope": ["keyword.control.export.ts"],
+        "settings": {
+          "foreground": "#ef61ce"
+        }
+      },
+      {
+        "scope": ["storage.type.class.ts"],
+        "settings": {
+          "foreground": "#f58aa7"
+        }
+      },
+      {
+        "scope": ["storage.modifier.ts", "support.function.functional.prisma"],
+        "settings": {
+          "foreground": "#db7115"
+        }
+      },
+      {
+        "scope": ["variable.language.super.ts", "source.prisma"],
+        "settings": {
+          "foreground": "#15c7db"
+        }
+      },
+      {
+        "scope": ["variable.other"],
+        "settings": {
+          "foreground": "#0885bf"
+        }
+      },
+      {
+        "scope": [
+          "storage.type.ts",
+          "variable.other.constant.ts",
+          "keyword.control.variable.const"
+        ],
+        "settings": {
+          "foreground": "#32CD32"
+        }
+      },
+
+      {
+        "scope": ["entity.name.type.class", "entity.name.type.class.js"],
+        "settings": {
+          "foreground": "#925fff"
+        }
+      },
+      {
+        "scope": "variable.other.property.ts",
+        "settings": {
+          "foreground": "#d1e2e5"
+        }
+      },
+      {
+        "scope": "punctuation.accessor.ts",
+        "settings": {
+          "foreground": "#ffd900"
+        }
+      },
+      {
+        "scope": "variable.parameter",
+        "settings": {
+          "foreground": "#ed7ff9"
+        }
+      },
+      {
+        "scope": [
+          "keyword.control.flow.ts",
+          "variable.language.relations.prisma"
+        ],
+        "settings": {
+          "foreground": "#a41de8"
+        }
+      },
+      {
+        "scope": "keyword.control",
+        "settings": {
+          "foreground": "#df0697"
+        }
+      },
+      {
+        "scope": "support.class",
+        "settings": {
+          "foreground": "#f9c529"
+        }
+      },
+      {
+        "scope": "meta.class.ts",
+        "settings": {
+          "foreground": "#ff00d4"
+        }
+      }
+    ]
+  },
+  "editor.rulers": [
+    120,
+    {
+      "column": 80,
+      "color": "#ff000010"
+    },
+    {
+      "column": 100,
+      "color": "#00ff0020"
+    },
+    {
+      "column": 120,
+      "color": "#ffa50020"
+    }
+  ],
+
+  "editor.unicodeHighlight.includeComments": true,
+  "workbench.colorCustomizations": {
+    "[Default Dark Modern]": {
+      "editor.background": "#090e19",
+      "sideBar.background": "#090e19",
+      "tab.activeBorderTop": "#403f90",
+      "tab.activeBorder": "#403f90",
+      "tab.activeBackground": "#7953d23f",
+      "tab.unfocusedActiveBorderTop": "#00FF0088",
+      "textCodeBlock.background": "#00000055",
+      "statusBar.background": "#2b073f",
+      "scrollbarSlider.background": "#7953d23f",
+      "scrollbarSlider.hoverBackground": "#7953d278",
+      "scrollbarSlider.activeBackground": "#7953d2d3",
+      "activityBarBadge.background": "#6705b7",
+      "activityBarBadge.foreground": "#1eff00",
+      "titleBar.activeBackground": "#040a18",
+      "editor.wordHighlightStrongBorder": "#FF6347",
+      "editor.wordHighlightBorder": "#FFD700",
+      "editor.selectionHighlightBorder": "#A9A9A9",
+      "sideBar.border": "#472b24",
+      "editorGroup.border": "#472b24",
+      "panel.border": "#472b24",
+      "statusBar.border": "#472b24",
+      "titleBar.border": "#472b24",
+      "terminal.border": "#472b24",
+      "terminal.background": "#090e19",
+      "activityBar.background": "#070b15",
+      "activityBar.foreground": "#33ff00",
+      "activityBar.inactiveForeground": "#a8a8a8",
+      "titleBar.activeForeground": "#a9a9a9",
+      "titleBar.inactiveBackground": "#2a2a2a",
+      "titleBar.inactiveForeground": "#cccccc",
+
+      "menubar.selectionBackground": "#333333",
+      "menubar.selectionForeground": "#e2e2e2",
+
+      "list.activeSelectionBackground": "#2a2a2a",
+      "list.activeSelectionForeground": "#ffffff",
+      "list.inactiveSelectionBackground": "#1f1f1f",
+      "list.inactiveSelectionForeground": "#cccccc",
+      "list.hoverBackground": "#141532",
+      "list.hoverForeground": "#ffffff",
+
+      "editorHoverWidget.foreground": "#ffffff",
+
+      "editorWidget.background": "#1e1e1e", // Fondo general de widgets (como Peek, Rename, etc.)
+      "editorWidget.foreground": "#ffffff",
+
+      "peekViewTitle.background": "#00000f", // Fondo del título en paneles tipo Peek
+      "peekViewEditor.background": "#000000", // Fondo del editor dentro del Peek
+      "peekViewResult.background": "#000000", // Fondo de resultados en Peek
+
+      "menu.background": "#020416", // Texto del menú
+      "menu.selectionBackground": "#021b37", // Fondo del ítem seleccionado
+      "menu.selectionForeground": "#ffffff", // Texto del ítem seleccionado
+
+      "editorSuggestWidget.background": "#0e0f1e", // Fondo general del menú
+      "editorSuggestWidget.foreground": "#c5c3c3", // Texto normal
+      "editorSuggestWidget.selectedBackground": "#2a2a2a", // Fondo del ítem seleccionado
+      "editorSuggestWidget.selectedForeground": "#ffffff", // Texto del ítem seleccionado
+      "editorSuggestWidget.highlightForeground": "#00afff", // Texto resaltado (por coincidencia)
+      "editorSuggestWidget.border": "#4b4040", // Borde del menú
+      "editorSuggestWidget.focusHighlightForeground": "#00ccff"
+    },
+    "panel.background": "#000000",
+    "panelTitle.activeForeground": "#00f925"
+  },
+  "workbench.editor.revealIfOpen": true,
+  "workbench.tree.indent": 20,
+  "files.eol": "\n",
+  "[bat]": {
+    "files.eol": "\r\n"
+  },
+  "emmet.variables": {
+    "lang": "en"
+  },
+  "cSpell.diagnosticLevel": "Hint",
+  "trailing-spaces.backgroundColor": "rgba(255,0,0,0.1)",
+  "trailing-spaces.includeEmptyLines": false,
+  "terminal.integrated.tabs.hideCondition": "never",
+  "terminal.integrated.enablePersistentSessions": false,
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.detectJdksAtStart": false,
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.debug.settings.hotCodeReplace": "auto",
+  "java.dependency.packagePresentation": "hierarchical",
+  "java.maxConcurrentBuilds": 4,
+  "java.sources.organizeImports.staticStarThreshold": 1,
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell"
+    },
+    "Command Prompt": {
+      "path": [
+        "${env:windir}\\Sysnative\\cmd.exe",
+        "${env:windir}\\System32\\cmd.exe"
+      ],
+      "args": [],
+      "icon": "terminal-cmd"
+    },
+    "Git Bash": {
+      "source": "Git Bash"
+    },
+    "Windows PowerShell": {
+      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+    },
+    "JavaSE-1.8 LTS": {
+      "overrideName": true,
+      "env": {
+        "PATH": "C:\\Program Files\\Java\\jdk-1.8\\bin;${env:PATH}",
+        "JAVA_HOME": "C:\\Program Files\\Java\\jdk-1.8"
+      },
+      "path": "cmd"
+    },
+    "JavaSE-11 LTS": {
+      "overrideName": true,
+      "env": {
+        "PATH": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\11\\bin;${env:PATH}",
+        "JAVA_HOME": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\11"
+      },
+      "path": "cmd"
+    },
+    "JavaSE-17 LTS": {
+      "overrideName": true,
+      "env": {
+        "PATH": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\17\\bin;${env:PATH}",
+        "JAVA_HOME": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\17"
+      },
+      "path": "cmd"
+    },
+    "JavaSE-21 LTS": {
+      "overrideName": true,
+      "env": {
+        "PATH": "C:\\Program Files\\Java\\jdk-21\\bin;${env:PATH}",
+        "JAVA_TOOL_OPTIONS": "-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
+        "JAVA_HOME": "C:\\Program Files\\Java\\jdk-21"
+      },
+      "path": "cmd",
+      "args": ["/k", "chcp", "65001"]
+    },
+    "JavaSE-23": {
+      "overrideName": true,
+      "env": {
+        "PATH": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\latest\\bin;${env:PATH}",
+        "JAVA_TOOL_OPTIONS": "-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8",
+        "JAVA_HOME": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\latest"
+      },
+      "path": "cmd",
+      "args": ["/k", "chcp", "65001"]
+    }
+  },
+  "terminal.integrated.automationProfile.windows": {
+    "path": "cmd"
+  },
+  "java.test.config": {
+    "vmArgs": ["-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"]
+  },
+  "terminal.integrated.env.windows": {
+    "JAVA_HOME": "C:\\Program Files\\Java\\jdk-21",
+    "PATH": "C:\\Program Files\\Java\\jdk-21\\bin;${env:PATH}"
+  },
+  "maven.terminal.customEnv": [
+    {
+      "environmentVariable": "JAVA_HOME",
+      "value": "C:\\Program Files\\Java\\jdk-21"
+    }
+  ],
+
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+  "notebook.formatOnSave.enabled": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "editor.fontFamily": "'Cascadia Code',Consolas, 'Courier New', monospace",
+  "editor.fontLigatures": true,
+  "eslint.format.enable": true,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "none",
+  "prettier.endOfLine": "lf",
+  "workbench.iconTheme": "a-file-icon-vscode",
+  "files.autoSave": "onFocusChange",
+  "git.autofetch": true,
+
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-1.8",
+      "path": "C:\\Program Files\\Java\\jdk-1.8"
+    },
+    {
+      "name": "JavaSE-11",
+      "path": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\11"
+    },
+    {
+      "name": "JavaSE-17",
+      "path": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\17"
+    },
+    {
+      "name": "JavaSE-21",
+      "path": "C:\\Program Files\\Java\\jdk-21"
+    },
+    {
+      "name": "JavaSE-23",
+      "path": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\latest",
+      "default": true
+    }
+  ],
+  "java.import.gradle.java.home": "C:\\Program Files\\Java\\jdk-21",
+  "maven.executable.path": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\maven\\latest\\bin\\mvn",
+  "java.import.gradle.home": "C:\\Users\\Mario Salazar\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\gradle\\latest",
+  "[jsonc]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+  "window.zoomPerWindow": false,
+  "window.zoomLevel": -1,
+  "[xml]": {
+    "editor.defaultFormatter": "DotJoshJohnson.xml"
+  },
+  "workbench.panel.showLabels": false,
+  "markdown-preview-enhanced.previewTheme": "night.css",
+  "markdown-preview-enhanced.codeBlockTheme": "github-dark.css"
+}
