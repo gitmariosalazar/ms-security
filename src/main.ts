@@ -5,6 +5,7 @@ import { Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { environments } from './settings/environments/environments';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { RpcCustomExceptionFilterMicoserviceSecurity } from './shared/errors/exception/GlobalExceptionHandler';
 
 async function bootstrap() {
   const logger: Logger = new Logger('Main');
@@ -43,6 +44,9 @@ async function bootstrap() {
         },
       },
     });
+  microservices.useGlobalFilters(
+    new RpcCustomExceptionFilterMicoserviceSecurity(),
+  );
   await microservices.listen();
   logger.log(`🚀🎉 The Authentication microservice is listening to KAFKA...`);
 }

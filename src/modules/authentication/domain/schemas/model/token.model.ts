@@ -1,30 +1,28 @@
 export class AccessTokenModel {
-  private idAccessToken: number;
-  private idUser: number;
+  private idAccessToken: string;
+  private idUser: string;
   private typeAuthentication: string;
   private provider: string;
   private providerAccount: string;
   private accessToken: string;
-  private expiresAt: number;
+  private expiresAt: Date;
   private tokenType: string;
   private scope: string;
-  private token: string;
   private createdAt: Date;
   private updatedAt: Date;
 
   constructor(
-    idAccessToken: number,
-    idUser: number,
+    idAccessToken: string,
+    idUser: string,
     typeAuthentication: string,
     provider: string,
     providerAccount: string,
     accessToken: string,
-    expiresAt: number,
+    expiresAt: Date,
     tokenType: string,
     scope: string,
-    token: string,
     createdAt?: Date,
-    updatedAt?: Date
+    updatedAt?: Date,
   ) {
     this.idAccessToken = idAccessToken;
     this.idUser = idUser;
@@ -35,14 +33,13 @@ export class AccessTokenModel {
     this.expiresAt = expiresAt;
     this.tokenType = tokenType;
     this.scope = scope;
-    this.token = token;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
-  getIdAccessToken(): number {
+  getIdAccessToken(): string {
     return this.idAccessToken;
   }
-  getIdUser(): number {
+  getIdUser(): string {
     return this.idUser;
   }
   getTypeAuthentication(): string {
@@ -57,7 +54,7 @@ export class AccessTokenModel {
   getAccessToken(): string {
     return this.accessToken;
   }
-  getExpiresAt(): number {
+  getExpiresAt(): Date {
     return this.expiresAt;
   }
   getTokenType(): string {
@@ -66,9 +63,6 @@ export class AccessTokenModel {
   getScope(): string {
     return this.scope;
   }
-  getToken(): string {
-    return this.token;
-  }
   getCreatedAt(): Date {
     return this.createdAt;
   }
@@ -76,10 +70,10 @@ export class AccessTokenModel {
     return this.updatedAt;
   }
 
-  setIdAccessToken(idAccessToken: number): void {
+  setIdAccessToken(idAccessToken: string): void {
     this.idAccessToken = idAccessToken;
   }
-  setIdUser(idUser: number): void {
+  setIdUser(idUser: string): void {
     this.idUser = idUser;
   }
   setTypeAuthentication(typeAuthentication: string): void {
@@ -94,7 +88,7 @@ export class AccessTokenModel {
   setAccessToken(accessToken: string): void {
     this.accessToken = accessToken;
   }
-  setExpiresAt(expiresAt: number): void {
+  setExpiresAt(expiresAt: Date): void {
     this.expiresAt = expiresAt;
   }
   setTokenType(tokenType: string): void {
@@ -103,9 +97,6 @@ export class AccessTokenModel {
   setScope(scope: string): void {
     this.scope = scope;
   }
-  setToken(token: string): void {
-    this.token = token;
-  }
   setCreatedAt(createdAt: Date): void {
     this.createdAt = createdAt;
   }
@@ -113,7 +104,7 @@ export class AccessTokenModel {
     this.updatedAt = updatedAt;
   }
 
-  toJSON(): Object{
+  toJSON(): Object {
     return {
       idAccessToken: this.idAccessToken,
       idUser: this.idUser,
@@ -124,9 +115,8 @@ export class AccessTokenModel {
       expiresAt: this.expiresAt,
       tokenType: this.tokenType,
       scope: this.scope,
-      token: this.token,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     };
   }
 }

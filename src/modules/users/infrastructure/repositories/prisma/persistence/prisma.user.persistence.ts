@@ -1,17 +1,15 @@
-import { Injectable } from "@nestjs/common";
-import { RpcException } from "@nestjs/microservices";
-import { InterfaceUserRepository } from "src/modules/users/domain/contracts/user.repository.interface";
-import { UserResponse } from "src/modules/users/domain/schemas/dto/response/user.response";
-import { UserModel } from "src/modules/users/domain/schemas/model/user.model";
-import { statusCode } from "src/settings/environments/status-code";
-import { PrismaService } from "src/shared/prisma/service/prisma.service";
+import { Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
+import { InterfaceUserRepository } from 'src/modules/users/domain/contracts/user.repository.interface';
+import { UserResponse } from 'src/modules/users/domain/schemas/dto/response/user.response';
+import { UserModel } from 'src/modules/users/domain/schemas/model/user.model';
+import { statusCode } from 'src/settings/environments/status-code';
+import { PrismaService } from 'src/shared/prisma/service/prisma.service';
 
 @Injectable()
-export class UserPrismaImplementation implements InterfaceUserRepository{
-  constructor(
-    private readonly prismaService: PrismaService
-  ) { }
-  
+export class UserPrismaImplementation implements InterfaceUserRepository {
+  constructor(private readonly prismaService: PrismaService) {}
+
   async create(userModel: UserModel): Promise<UserResponse | null> {
     try {
       const userFound = await this.prismaService.user.findFirst({
@@ -22,7 +20,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository{
         throw new RpcException({
           statusCode: statusCode.CONFLICT,
           message: `User with email "${userModel.getUserEmail()}" already exists.`,
-        })
+        });
       }
 
       const user = await this.prismaService.user.create({
@@ -62,7 +60,10 @@ export class UserPrismaImplementation implements InterfaceUserRepository{
     }
   }
 
-  async update(idUser: number, userModel: UserModel): Promise<UserResponse | null> {
+  async update(
+    idUser: string,
+    userModel: UserModel,
+  ): Promise<UserResponse | null> {
     try {
       const userFound = await this.prismaService.user.findUnique({
         where: { id_user: idUser },
@@ -113,7 +114,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository{
     }
   }
 
-  async findById(idUser: number): Promise<UserResponse | null> {
+  async findById(idUser: string): Promise<UserResponse | null> {
     try {
       const userFound = await this.prismaService.user.findUnique({
         where: { id_user: idUser },
@@ -187,7 +188,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository{
     }
   }
 
-  async delete(idUser: number): Promise<boolean> {
+  async delete(idUser: string): Promise<boolean> {
     try {
       const userFound = await this.prismaService.user.findUnique({
         where: { id_user: idUser },
@@ -225,7 +226,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository{
         });
       }
 
-      return users.map(user => ({
+      return users.map((user) => ({
         idUser: user.id_user,
         userEmail: user.user_email,
         firstName: user.first_name,
@@ -245,5 +246,4 @@ export class UserPrismaImplementation implements InterfaceUserRepository{
       throw error;
     }
   }
-
 }

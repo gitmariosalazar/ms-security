@@ -1,0 +1,43 @@
+# 1️⃣ Stage: Dependencies
+# This stage installs the dependencies of the application.
+FROM node:24-alpine3.22 AS deps
+
+WORKDIR /usr/src/app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# 2️⃣ Stage: Build
+FROM node:24-alpine3.22 AS build
+
+WORKDIR /usr/src/app
+
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+COPY . .
+# Verifiy that the prisma directory exists
+RUN ls -la /usr/src/app/src/shared && test -d /usr/src/app/src/shared/prisma || (echo "src/shared/prisma directory not found" && exit 1)
+RUN npm run prisma:generate
+RUN npm run build
+
+# 3️⃣ Stage: Production
+FROM node:24-alpine3.22 AS prod
+
+WORKDIR /usr/src/app
+
+COPY package.json package-lock.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy only necessary files from build stage
+COPY --from=build /usr/src/app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /usr/src/app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/src/shared/prisma ./src/shared/prisma
+
+ENV NODE_ENV=production
+
+USER node
+
+EXPOSE 4001
+
+# Apply migrations before starting the app
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=src/shared/prisma/schema.prisma && node dist/main"]

@@ -17,6 +17,14 @@ import { CreateUserRequest } from 'src/modules/users/domain/schemas/dto/request/
 import { UserTypeModel } from 'src/modules/user-type/domain/schemas/model/user-type.model';
 import { AuthUserResponse } from '../../domain/schemas/dto/response/user.response';
 import { environments } from 'src/settings/environments/environments';
+import { User } from '../../domain/schemas/dto/response/user.auth.response';
+import { IUserPayload } from '../interfaces/user.payload.interface';
+import { RevokeTokenModel } from '../../domain/schemas/model/revoke-token.model';
+import { RefreshTokenModel } from '../../domain/schemas/model/refresh-token.model';
+import { CreateRefreshTokenRequest } from '../../domain/schemas/dto/request/create.refresh-token.request';
+import { RefreshTokenResponse } from '../../domain/schemas/dto/response/refresh-token.response';
+import { CreateRevokeTokenRequest } from '../../domain/schemas/dto/request/create.revoke-token.request';
+import { RevokeTokenResponse } from '../../domain/schemas/dto/response/revoke-token.response';
 
 @Injectable()
 export class AuthService implements InterfaceAuthUseCase {
@@ -27,6 +35,79 @@ export class AuthService implements InterfaceAuthUseCase {
     private readonly userRepository: InterfaceUserRepository,
     private readonly jwtService: JwtService,
   ) {}
+
+  async verifyToken(auth_token: string): Promise<boolean> {
+    try {
+      if (!auth_token || auth_token.trim() === '') {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Token is required.',
+        });
+      }
+
+      // Verify the token using the JWT service
+      const verify = await this.jwtService.verifyAsync(auth_token, {
+        secret: environments.secretKey,
+      });
+      if (!verify) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Invalid token.',
+        });
+      }
+      console.log(verify);
+      console.log(verify!!);
+      return true; // Return true if the token is valid
+    } catch (error) {
+      console.error(`Error verifying token: ${error.message}`);
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message: 'Token is not valid or has expired. ❌',
+      });
+    }
+  }
+
+  async getCurrentUser(auth_token: string): Promise<User | null> {
+    try {
+      if (!auth_token || auth_token.trim() === '') {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Token is required.',
+        });
+      }
+
+      const payload: IUserPayload = await this.jwtService.verifyAsync(
+        auth_token,
+        {
+          secret: environments.secretKey,
+        },
+      );
+
+      if (!payload || !payload.idUser || !payload.userEmail) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Invalid token payload.',
+        });
+      }
+
+      // Fetch the user by ID
+
+      const user = await this.userRepository.findById(payload.idUser);
+      if (!user) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'User not found for the provided token. ❌',
+        });
+      }
+      return AuthMapper.toAuthUserResponse(user);
+    } catch (error) {
+      console.log(`first error in getCurrentUser: ${error.message}`);
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message: 'Token is not valid or has expired.',
+      });
+    }
+  }
 
   async signin(signInRequest: SignInRequest): Promise<TokenResponse | null> {
     try {
@@ -75,7 +156,7 @@ export class AuthService implements InterfaceAuthUseCase {
         user,
       );
 
-      const payload = AuthMapper.toUserPayload(user);
+      const payload: IUserPayload = AuthMapper.toUserPayload(user);
 
       const accessToken = this.jwtService.sign(payload, {
         secret: environments.secretKey,
@@ -84,7 +165,7 @@ export class AuthService implements InterfaceAuthUseCase {
       });
 
       tokenModel.setAccessToken(accessToken);
-      tokenModel.setExpiresAt(Math.floor((Date.now() + 3600000) / 1000));
+      tokenModel.setExpiresAt(new Date(Date.now() + 60000 * 60)); // 1 hour expiration
       tokenModel.setCreatedAt(new Date());
       tokenModel.setUpdatedAt(new Date());
       tokenModel.setIdUser(user.idUser);
@@ -92,7 +173,6 @@ export class AuthService implements InterfaceAuthUseCase {
       tokenModel.setProvider('local');
       tokenModel.setProviderAccount('providerAccount');
       tokenModel.setScope('scope');
-      tokenModel.setToken(accessToken);
 
       const tokenResponse = await this.authRepository.signin(tokenModel);
       if (!tokenResponse) {
@@ -101,6 +181,46 @@ export class AuthService implements InterfaceAuthUseCase {
           message: 'Error signing in, please try again later.',
         });
       }
+
+      // Generate refresh token
+      const refreshToken = this.jwtService.sign(
+        {
+          user: {
+            id: user.idUser,
+          },
+        },
+        {
+          secret: environments.secretKey,
+          expiresIn: '1h', // 1 hour expiration
+          algorithm: 'HS256',
+        },
+      );
+
+      const createRefreshTokenRequest: CreateRefreshTokenRequest =
+        new CreateRefreshTokenRequest(
+          user.idUser,
+          tokenResponse.idAccessToken,
+          refreshToken,
+          false,
+          new Date(Date.now() + 3600000), // 1 hour expiration
+        );
+
+      const refreshTokenModel: RefreshTokenModel =
+        AuthMapper.fromCreateRefreshTokenToRefreshTokenModel(
+          createRefreshTokenRequest,
+        );
+
+      const createdRefreshToken: RefreshTokenResponse =
+        await this.authRepository.createRefreshToken(refreshTokenModel);
+
+      if (!createdRefreshToken) {
+        throw new RpcException({
+          statusCode: statusCode.INTERNAL_SERVER_ERROR,
+          message: 'Error creating refresh token, please try again later.',
+        });
+      }
+      tokenResponse.refreshToken = createdRefreshToken.refreshToken;
+
       return tokenResponse;
     } catch (error) {
       throw error;
@@ -177,11 +297,16 @@ export class AuthService implements InterfaceAuthUseCase {
 
       const payload = AuthMapper.toUserPayload(createdUser);
 
-      const accessToken = this.jwtService.sign(payload);
+      const accessToken = this.jwtService.sign(payload, {
+        secret: environments.secretKey,
+        expiresIn: '1h', // 1 hour expiration
+        // expiresIn: '1m', // 1 minute expiration for testing
+        algorithm: 'HS256',
+      });
 
       tokenModel.setAccessToken(accessToken);
       tokenModel.setTokenType('Bearer');
-      tokenModel.setExpiresAt(Math.floor((Date.now() + 3600000) / 1000));
+      tokenModel.setExpiresAt(new Date(Date.now() + 3600000)); // 1 hour expiration
       tokenModel.setCreatedAt(new Date());
       tokenModel.setUpdatedAt(new Date());
       tokenModel.setIdUser(createdUser.idUser);
@@ -189,7 +314,6 @@ export class AuthService implements InterfaceAuthUseCase {
       tokenModel.setProvider('local');
       tokenModel.setProviderAccount('providerAccount');
       tokenModel.setScope('scope');
-      tokenModel.setToken(accessToken);
 
       const tokenResponse = await this.authRepository.signup(tokenModel);
       if (!tokenResponse) {
@@ -199,6 +323,43 @@ export class AuthService implements InterfaceAuthUseCase {
         });
       }
 
+      const refreshToken = this.jwtService.sign(
+        {
+          user: {
+            id: createdUser.idUser,
+          },
+        },
+        {
+          secret: environments.secretKey,
+          expiresIn: '1h', // 1 hour expiration
+          algorithm: 'HS256',
+        },
+      );
+
+      const createRefreshTokenRequest: CreateRefreshTokenRequest =
+        new CreateRefreshTokenRequest(
+          createdUser.idUser,
+          tokenResponse.idAccessToken,
+          refreshToken,
+          false,
+          new Date(Date.now() + 3600000), // 1 hour expiration
+        );
+
+      const refreshTokenModel: RefreshTokenModel =
+        AuthMapper.fromCreateRefreshTokenToRefreshTokenModel(
+          createRefreshTokenRequest,
+        );
+
+      const createdRefreshToken: RefreshTokenResponse =
+        await this.authRepository.createRefreshToken(refreshTokenModel);
+      if (!createdRefreshToken) {
+        throw new RpcException({
+          statusCode: statusCode.INTERNAL_SERVER_ERROR,
+          message: 'Error creating refresh token, please try again later.',
+        });
+      }
+
+      tokenResponse.refreshToken = createdRefreshToken.refreshToken;
       return tokenResponse;
     } catch (error) {
       throw error;
@@ -216,4 +377,49 @@ export class AuthService implements InterfaceAuthUseCase {
       throw error;
     }
   }
+
+  async createRefreshToken(
+    refreshToken: CreateRefreshTokenRequest,
+  ): Promise<RefreshTokenResponse | null> {
+    try {
+      const refreshTokenModel: RefreshTokenModel =
+        AuthMapper.fromCreateRefreshTokenToRefreshTokenModel(refreshToken);
+      const createdRefreshToken =
+        await this.authRepository.createRefreshToken(refreshTokenModel);
+      if (!createdRefreshToken) {
+        throw new RpcException({
+          statusCode: statusCode.INTERNAL_SERVER_ERROR,
+          message: 'Error creating refresh token, please try again later.',
+        });
+      }
+      return createdRefreshToken;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createRevokeToken(
+    revokeToken: CreateRevokeTokenRequest,
+  ): Promise<RevokeTokenResponse | null> {
+    try {
+      const revokeTokenModel: RevokeTokenModel =
+        AuthMapper.fromCreateRevokedTokenRequestToRevokedTokenModel(
+          revokeToken,
+        );
+      const createdRevokeToken =
+        await this.authRepository.createRevokeToken(revokeTokenModel);
+      if (!createdRevokeToken) {
+        throw new RpcException({
+          statusCode: statusCode.INTERNAL_SERVER_ERROR,
+          message: 'Error creating revoke token, please try again later.',
+        });
+      }
+      return createdRevokeToken;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
+function ms(arg0: string) {
+  throw new Error('Function not implemented.');
 }

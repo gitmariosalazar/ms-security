@@ -1,13 +1,10 @@
-export interface UserResponseSql {
+export interface User {
   idUser: string;
   userEmail: string;
-  userPassword: string;
   firstName: string;
   lastName: string;
   userActive: boolean;
-  idUserType: number;
-  name: string;
-  description: string;
+  userType: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

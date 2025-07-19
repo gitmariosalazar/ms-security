@@ -5,10 +5,11 @@ import { UserResponse } from '../../domain/schemas/dto/response/user.response';
 export interface InterfaceUserUseCaseService {
   create(userRequest: CreateUserRequest): Promise<UserResponse | null>;
   update(
-    idUser: number,
+    idUser: string,
     userRequest: UpdateUserRequest,
   ): Promise<UserResponse | null>;
-  findById(idUser: number): Promise<UserResponse | null>;
+  findById(idUser: string): Promise<UserResponse | null>;
   findByEmail(userEmail: string): Promise<UserResponse | null>;
   findAll(): Promise<UserResponse[]>;
+  delete(idUser: string): Promise<boolean>;
 }

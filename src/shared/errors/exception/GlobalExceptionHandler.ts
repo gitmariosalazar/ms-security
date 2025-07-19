@@ -4,91 +4,107 @@ import {
   ArgumentsHost,
   Logger,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
-import { ApiResponse } from '../responses/ApiResponse';
 import { statusCode } from 'src/settings/environments/status-code';
 
-@Catch(RpcException)
-export class RcpCustomExceptionFilter
-  implements RpcExceptionFilter<RpcException>
+@Catch() // Captura todos los errores
+export class RpcCustomExceptionFilterMicoserviceSecurity
+  implements RpcExceptionFilter
 {
-  private readonly logger = new Logger(RcpCustomExceptionFilter.name);
+  private readonly logger = new Logger(
+    RpcCustomExceptionFilterMicoserviceSecurity.name,
+  );
 
-  catch(exception: RpcException, host: ArgumentsHost): Observable<any> {
+  catch(exception: any, host: ArgumentsHost): Observable<any> {
     const ctx = host.switchToRpc();
     const response = ctx.getContext();
+    const requestUrl = response.req?.url || 'unknown';
 
-    const errorResponse = exception.getError();
-    this.logger.error(`Caught RpcException: ${JSON.stringify(errorResponse)}`);
-    if (errorResponse instanceof AggregateError) {
-      const errorDetails = errorResponse.errors || [];
-      const connectionErrors = errorDetails.filter(
-        (err: any) => err.code === 'ECONNREFUSED',
+    let statusCodeValue = statusCode.INTERNAL_SERVER_ERROR; // 500 por defecto
+    let message: string | string[] = ['An unexpected error occurred'];
+
+    if (exception instanceof RpcException) {
+      const errorResponse = exception.getError();
+      this.logger.error(
+        `RpcException caught: ${JSON.stringify(errorResponse)}`,
       );
 
-      if (connectionErrors.length > 0) {
-        this.logger.error('Connection refused error detected:');
-        connectionErrors.forEach((err: any) => {
-          this.logger.error(`Failed to connect to ${err.address}:${err.port}`);
-        });
-
-        const apiResponse = new ApiResponse(
-          [
-            'Connection refused by target service. Please check the service availability.',
-          ],
-          null,
-          response.req.url,
+      if (errorResponse instanceof AggregateError) {
+        const errorDetails = errorResponse.errors || [];
+        const connectionErrors = errorDetails.filter(
+          (err: any) => err.code === 'ECONNREFUSED',
         );
-        apiResponse.status_code = statusCode.SERVICE_UNAVAILABLE;
-        return response.status(statusCode.SERVICE_UNAVAILABLE).json({
-          time: new Date().toISOString(),
-          message:
-            typeof apiResponse.message === 'string'
-              ? [apiResponse.message]
-              : apiResponse.message,
-          url: apiResponse.url,
-          data: apiResponse.data,
-          status_code: apiResponse.status_code,
-        });
+
+        if (connectionErrors.length > 0) {
+          this.logger.error('Connection refused error detected:');
+          connectionErrors.forEach((err: any) => {
+            this.logger.error(
+              `Failed to connect to ${err.address}:${err.port}`,
+            );
+          });
+          statusCodeValue = statusCode.SERVICE_UNAVAILABLE; // 503
+          message = [
+            'Connection refused by target service. Please check the service availability.',
+          ];
+        } else {
+          statusCodeValue = statusCode.INTERNAL_SERVER_ERROR;
+          message = errorDetails.map(
+            (err: any) => err.message || 'Unknown error',
+          );
+        }
+      } else if (typeof errorResponse === 'object' && errorResponse !== null) {
+        // Set structure { error: { statusCode, message } } o { statusCode, message }
+        let errorObject = errorResponse;
+        if (
+          'error' in errorResponse &&
+          typeof errorResponse.error === 'object' &&
+          errorResponse.error !== null
+        ) {
+          errorObject = errorResponse.error;
+        }
+        const { statusCode: code, message: errorMessage } = errorObject as {
+          statusCode?: number;
+          message?: string | string[];
+        };
+
+        this.logger.error(
+          `Error object caught: ${JSON.stringify(errorObject)}`,
+        );
+
+        statusCodeValue = code || statusCode.INTERNAL_SERVER_ERROR;
+        message = errorMessage || ['An unknown error occurred'];
+      } else if (typeof errorResponse === 'string') {
+        message = [errorResponse];
+        statusCodeValue = statusCode.INTERNAL_SERVER_ERROR;
       }
-    }
-
-    let apiResponse = new ApiResponse(
-      ['An unknown error occurred'],
-      null,
-      response.req.url,
-    );
-    let httpStatusCode = 500;
-
-    if (typeof errorResponse === 'object' && errorResponse !== null) {
-      const { statusCode: code, message } = errorResponse as {
-        statusCode: number;
-        message: string;
-      };
-      httpStatusCode = code || 500;
-      apiResponse = new ApiResponse(message, null, response.req.url);
-      apiResponse.status_code = httpStatusCode;
-    } else if (typeof errorResponse === 'string') {
-      apiResponse = new ApiResponse(
-        [errorResponse || 'An unknown error occurred'],
-        null,
-        response.req.url,
-      );
-      apiResponse.status_code = httpStatusCode;
     } else {
-      apiResponse.status_code = httpStatusCode;
+      this.logger.error(
+        `Unexpected error caught: ${exception.message} at ${exception.code}`,
+        exception.stack,
+      );
+      statusCodeValue = statusCode.INTERNAL_SERVER_ERROR;
+      message = [exception.message || 'An unexpected error occurred'];
     }
 
-    return response.status(httpStatusCode).json({
-      time: new Date().toISOString(),
-      message:
-        typeof apiResponse.message === 'string'
-          ? [apiResponse.message]
-          : apiResponse.message,
-      url: apiResponse.url,
-      data: apiResponse.data,
-      status_code: apiResponse.status_code,
+    // Standardize all errors as RpcException
+    const rpcException = new RpcException({
+      statusCode: statusCodeValue,
+      message: Array.isArray(message) ? message : [message],
     });
+
+    // Structure the error response
+    const errorResponse = {
+      time: new Date().toISOString(),
+      message: Array.isArray(message) ? message : [message],
+      url: requestUrl,
+      data: null,
+      status_code: statusCodeValue,
+    };
+
+    this.logger.log(
+      `Error response sent: ${JSON.stringify(errorResponse)} at ${message}`,
+    );
+    return throwError(() => rpcException);
   }
 }

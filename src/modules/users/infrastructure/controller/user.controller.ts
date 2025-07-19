@@ -27,7 +27,7 @@ export class UserController {
     description: 'Retrieves a user by its ID.',
   })
   @MessagePattern('user.find-by-id')
-  async findById(@Payload('idUser') idUser: number) {
+  async findById(@Payload('idUser') idUser: string) {
     return this.userService.findById(idUser);
   }
 
@@ -50,7 +50,7 @@ export class UserController {
   async update(
     @Payload()
     payload: {
-      idUser: number;
+      idUser: string;
       userRequest: UpdateUserRequest;
     },
   ) {
@@ -64,7 +64,7 @@ export class UserController {
     description: 'Deletes a user by its ID.',
   })
   @MessagePattern('user.delete')
-  async delete(@Payload('idUser') idUser: number) {
+  async delete(@Payload('idUser') idUser: string) {
     return this.userService.delete(idUser);
   }
 

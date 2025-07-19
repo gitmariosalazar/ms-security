@@ -1,7 +1,7 @@
-import { UserTypeResponse } from "src/modules/user-type/domain/schemas/dto/response/user-type.response";
+import { UserTypeResponse } from 'src/modules/user-type/domain/schemas/dto/response/user-type.response';
 
 export interface UserResponse {
-  idUser: number;
+  idUser: string;
   userEmail: string;
   firstName: string;
   lastName: string;

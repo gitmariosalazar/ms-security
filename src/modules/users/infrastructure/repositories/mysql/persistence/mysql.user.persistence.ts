@@ -57,7 +57,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
   }
 
   async update(
-    idUser: number,
+    idUser: string,
     userModel: UserModel,
   ): Promise<UserResponse | null> {
     try {
@@ -116,7 +116,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
     }
   }
 
-  async findById(idUser: number): Promise<UserResponse | null> {
+  async findById(idUser: string): Promise<UserResponse | null> {
     try {
       const query: string = `
         SELECT u.id_user as "idUser", u.user_email as "userEmail", u.user_password as "userPassword",
@@ -190,7 +190,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
     }
   }
 
-  async delete(idUser: number): Promise<boolean> {
+  async delete(idUser: string): Promise<boolean> {
     try {
       const userFound = await this.mysqlService.query(
         'SELECT * FROM users WHERE id_user = ?',

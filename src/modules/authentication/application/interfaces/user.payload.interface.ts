@@ -1,5 +1,5 @@
 export interface IUserPayload {
-  idUser: number;
+  idUser: string;
   userEmail: string;
   firstName: string;
   lastName: string;
@@ -7,4 +7,5 @@ export interface IUserPayload {
   isActive: boolean;
   date: Date;
   userType: string;
+  jti: string; // JWT ID
 }

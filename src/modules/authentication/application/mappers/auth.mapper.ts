@@ -1,23 +1,30 @@
-import { SignInRequest } from "../../domain/schemas/dto/request/signin.request";
-import { SignUpRequest } from "../../domain/schemas/dto/request/signup.request";
-import { AccessTokenModel } from "../../domain/schemas/model/token.model";
-import { IUserPayload } from "../interfaces/user.payload.interface";
+import { User } from './../../domain/schemas/dto/response/user.auth.response';
+import { UserResponse } from 'src/modules/users/domain/schemas/dto/response/user.response';
+import { SignInRequest } from '../../domain/schemas/dto/request/signin.request';
+import { SignUpRequest } from '../../domain/schemas/dto/request/signup.request';
+import { AccessTokenModel } from '../../domain/schemas/model/token.model';
+import { IUserPayload } from '../interfaces/user.payload.interface';
+import { v4 as uuidv4 } from 'uuid';
+import { RefreshTokenModel } from '../../domain/schemas/model/refresh-token.model';
+import { CreateRefreshTokenRequest } from '../../domain/schemas/dto/request/create.refresh-token.request';
+import { RevokeTokenModel } from '../../domain/schemas/model/revoke-token.model';
+import { CreateRevokeTokenRequest } from '../../domain/schemas/dto/request/create.revoke-token.request';
 
 export class AuthMapper {
-  static toTokenModel(signInRequest: SignInRequest, user: any): AccessTokenModel {
+  static toTokenModel(
+    signInRequest: SignInRequest,
+    user: any,
+  ): AccessTokenModel {
     return new AccessTokenModel(
-      0,
+      uuidv4(),
       user.idUser,
       'password',
-      'local', 
+      'local',
       'providerAccount',
       'accessToken',
-      0, 
-      'Bearer', 
-      'scope', 
-      'someToken', 
       new Date(),
-      new Date() 
+      'Bearer',
+      'scope',
     );
   }
 
@@ -25,19 +32,27 @@ export class AuthMapper {
     userRequest: SignUpRequest,
   ): AccessTokenModel {
     return new AccessTokenModel(
-      0,
-      0,
+      uuidv4(),
+      '',
       'password',
       'local',
       'providerAccount',
       'accessToken',
-      0,
+      new Date(),
       'Bearer',
       'scope',
-      'someToken',
-      new Date(),
-      new Date(),
     );
+  }
+
+  static toAuthUserResponse(user: UserResponse): User {
+    return {
+      idUser: user.idUser,
+      userEmail: user.userEmail,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      userActive: user.userActive,
+      userType: user.userType.idUserType,
+    };
   }
 
   static toUserPayload(user: any): IUserPayload {
@@ -50,6 +65,32 @@ export class AuthMapper {
       isActive: user.userActive,
       date: user.createdAt,
       userType: user.userType,
+      jti: uuidv4(), // Generate a unique identifier for the JWT
     };
+  }
+
+  static fromCreateRefreshTokenToRefreshTokenModel(
+    refreshToken: CreateRefreshTokenRequest,
+  ): RefreshTokenModel {
+    return new RefreshTokenModel(
+      uuidv4(),
+      refreshToken.idUser,
+      refreshToken.idAccessToken,
+      refreshToken.refreshToken,
+      refreshToken.revoked,
+      refreshToken.expiresAt,
+    );
+  }
+
+  static fromCreateRevokedTokenRequestToRevokedTokenModel(
+    refreshToken: CreateRevokeTokenRequest,
+  ): RevokeTokenModel {
+    return new RevokeTokenModel(
+      uuidv4(),
+      refreshToken.idAccessToken,
+      refreshToken.jti,
+      refreshToken.reason,
+      refreshToken.idUser,
+    );
   }
 }

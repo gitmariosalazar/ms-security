@@ -3,11 +3,11 @@ export class ApiResponse {
   time: Date = new Date();
   message: any;
   url: string;
-  data: any;
+  result: any;
 
-  constructor(message: any, data: any, url: string) {
+  constructor(message: any, result: any, url: string) {
     this.message = message;
-    this.data = data;
+    this.result = result;
     this.status_code = 201;
     this.url = url.replace('uri=', '');
   }

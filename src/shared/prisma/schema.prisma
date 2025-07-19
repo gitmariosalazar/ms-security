@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,8 +14,8 @@ datasource db {
 
 model UserType {
   id_user_type     Int              @id @default(autoincrement()) @map("id_user_type")
-  name             String           @unique @map("name")
-  description      String           @map("description")
+  name             String           @unique @map("name") @db.VarChar(50)
+  description      String?          @map("description") @db.Text
   created_at       DateTime         @default(now()) @map("created_at")
   updated_at       DateTime         @updatedAt @map("updated_at")
   users            User[]           @relation("UserTypeUsers")
@@ -29,8 +26,8 @@ model UserType {
 
 model Permission {
   id_permission    Int              @id @default(autoincrement()) @map("id_permission")
-  name             String           @unique @map("name")
-  description      String           @map("description")
+  name             String           @unique @map("name") @db.VarChar(50)
+  description      String?          @map("description") @db.Text
   created_at       DateTime         @default(now()) @map("created_at")
   updated_at       DateTime         @updatedAt @map("updated_at")
   role_permissions RolePermission[] @relation("PermissionRolePermissions")
@@ -40,7 +37,7 @@ model Permission {
 
 model RolePermission {
   id_role_permission Int        @id @default(autoincrement()) @map("id_role_permission")
-  id_user_type       Int        @map("user_type")
+  id_user_type       Int        @map("id_user_type")
   id_permission      Int        @map("id_permission")
   created_at         DateTime   @default(now()) @map("created_at")
   updated_at         DateTime   @updatedAt @map("updated_at")
@@ -52,18 +49,21 @@ model RolePermission {
 }
 
 model User {
-  id_user       Int                @id @default(autoincrement()) @map("id_user")
-  user_email    String             @unique @map("user_email")
-  user_password String             @map("user_password")
-  first_name    String             @map("first_name")
-  last_name     String             @map("last_name")
-  user_active   Boolean            @default(true) @map("user_active")
-  id_user_type  Int                @map("id_user_type")
-  created_at    DateTime           @default(now()) @map("created_at")
-  updated_at    DateTime           @updatedAt @map("updated_at")
-  user_type     UserType           @relation("UserTypeUsers", fields: [id_user_type], references: [id_user_type])
-  access_tokens AccessTokenModel[]
+  id_user        String              @id @default(uuid()) @map("id_user")
+  user_email     String              @unique @map("user_email") @db.VarChar(100)
+  user_password  String              @map("user_password") @db.VarChar(255) // Encriptado en la aplicación
+  first_name     String              @map("first_name") @db.VarChar(50)
+  last_name      String              @map("last_name") @db.VarChar(50)
+  user_active    Boolean             @default(true) @map("user_active")
+  id_user_type   Int                 @map("id_user_type")
+  created_at     DateTime            @default(now()) @map("created_at")
+  updated_at     DateTime            @updatedAt @map("updated_at")
+  user_type      UserType            @relation("UserTypeUsers", fields: [id_user_type], references: [id_user_type])
+  access_tokens  AccessTokenModel[]
+  revoke_tokens  RevokeToken[]
+  refresh_tokens RefreshTokenModel[]
 
+  @@index([user_email])
   @@map("users")
 }
 
@@ -92,33 +92,33 @@ model Priority {
 }
 
 model Notification {
-  id_notifications     Int       @id @default(autoincrement()) @map("id_notifications")
-  email                String?   @db.VarChar(100)
-  phone                String?   @db.VarChar(15)
-  subject              String?   @db.VarChar(150)
-  message              String    @db.Text
+  id_notifications     String           @id @default(uuid()) @map("id_notifications")
+  email                String?          @db.VarChar(100)
+  phone                String?          @db.VarChar(15)
+  subject              String?          @db.VarChar(150)
+  message              String           @db.Text
   id_notification_type Int
-  id_status               Int
-  attempts             Int       @default(0)
-  sent_at              DateTime? @db.Timestamp(6)
-  created_at           DateTime  @default(now()) @db.Timestamp(6)
-  updated_at           DateTime  @updatedAt @db.Timestamp(6)
+  id_status            Int
+  attempts             Int              @default(0)
+  sent_at              DateTime?        @db.Timestamp(6)
+  created_at           DateTime         @default(now()) @db.Timestamp(6)
+  updated_at           DateTime         @updatedAt @db.Timestamp(6)
   process_code         Int
   id_priority          Int
-  logs_notification    Json?     @db.Json
+  logs_notification    Json?            @db.Json
+  process              Process          @relation(fields: [process_code], references: [id_process])
+  type_notification    TypeNotification @relation(fields: [id_notification_type], references: [id_type_notification])
+  priority             Priority         @relation(fields: [id_priority], references: [id_priority])
+  status               Status?          @relation(fields: [id_status], references: [id_status])
 
-  process           Process          @relation(fields: [process_code], references: [id_process])
-  type_notification TypeNotification @relation(fields: [id_notification_type], references: [id_type_notification])
-  priority          Priority         @relation(fields: [id_priority], references: [id_priority])
-  status            Status?           @relation(fields: [id_status], references: [id_status])
-
-  @@index([id_notification_type], name: "idx_notification_type")
+  @@index([id_notification_type])
+  @@index([process_code])
   @@map("notifications")
 }
 
 model TypeService {
   id_type_service Int       @id @default(autoincrement()) @map("id_type_service")
-  name            String    @db.VarChar(200)
+  name            String    @db.VarChar(100)
   description     String?   @db.Text
   created_at      DateTime  @default(now()) @map("created_at")
   updated_at      DateTime  @updatedAt @map("updated_at")
@@ -129,7 +129,7 @@ model TypeService {
 
 model Service {
   id_service      Int         @id @default(autoincrement()) @map("id_service")
-  name            String      @db.VarChar(150)
+  name            String      @db.VarChar(100)
   description     String?     @db.Text
   id_type_service Int
   created_at      DateTime    @default(now()) @map("created_at")
@@ -140,25 +140,26 @@ model Service {
 }
 
 model Entity {
-  id_entity   Int      @id @default(autoincrement()) @map("id_entity")
-  ruc         String   @db.VarChar(13)
-  name        String   @db.VarChar(150)
-  email       String   @db.VarChar(150)
-  cellphone   String   @db.VarChar(15)
-  telephone   String   @db.VarChar(15)
-  address     String   @db.VarChar(150)
-  description String?  @db.Text
-  created_at  DateTime @default(now()) @map("created_at")
-  updated_at  DateTime @updatedAt @map("updated_at")
-  process     Process[]
+  id_entity      Int             @id @default(autoincrement()) @map("id_entity")
+  ruc            String          @unique @db.VarChar(13)
+  name           String          @db.VarChar(150)
+  email          String          @db.VarChar(100)
+  cellphone      String          @db.VarChar(15)
+  telephone      String?         @db.VarChar(15)
+  address        String          @db.VarChar(150)
+  description    String?         @db.Text
+  created_at     DateTime        @default(now()) @map("created_at")
+  updated_at     DateTime        @updatedAt @map("updated_at")
+  process        Process[]
   detail_invoice DetailInvoice[]
 
+  @@index([ruc])
   @@map("entity")
 }
 
 model TypeDocument {
   id_type_document Int        @id @default(autoincrement()) @map("id_type_document")
-  title            String     @db.VarChar(255)
+  title            String     @db.VarChar(100)
   description      String?    @db.Text
   created_at       DateTime   @default(now()) @map("created_at")
   updated_at       DateTime   @updatedAt @map("updated_at")
@@ -181,14 +182,14 @@ model TypeStatus {
 model Status {
   id_status      Int             @id @default(autoincrement()) @map("id_status")
   id_type_status Int
-  name           String          @db.VarChar(150)
+  name           String          @db.VarChar(100)
   description    String?         @db.Text
   created_at     DateTime        @default(now()) @map("created_at")
   updated_at     DateTime        @updatedAt @map("updated_at")
   type_status    TypeStatus      @relation(fields: [id_type_status], references: [id_type_status])
   process        Process[]
   document       Document[]
-  detail_invoice  DetailInvoice[]
+  detail_invoice DetailInvoice[]
   notification   Notification[]
 
   @@map("status")
@@ -196,18 +197,18 @@ model Status {
 
 model Process {
   id_process        Int                @id @default(autoincrement()) @map("id_process")
-  process_number    String             @map("process_number") @db.VarChar(100)
+  process_number    String             @unique @map("process_number") @db.VarChar(100)
   value             Decimal?           @db.Decimal(10, 2)
-  category          String             @db.VarChar(200)
-  id_entity            Int
+  category          String             @db.VarChar(100)
+  id_entity         Int
   description       String?            @db.Text
-  time_execution    String             @map("time_execution") @db.VarChar(150)
+  time_execution    String             @map("time_execution") @db.VarChar(100)
   process_object    String             @db.VarChar(200)
   email_manager     String?            @map("email_manager") @db.VarChar(100)
   full_name_manager String?            @db.VarChar(100)
   phone_manager     String?            @db.VarChar(15)
   status_process    Int
-  is_active         Boolean
+  is_active         Boolean            @default(true)
   created_at        DateTime           @default(now()) @map("created_at")
   updated_at        DateTime           @updatedAt @map("updated_at")
   notification      Notification[]
@@ -219,17 +220,18 @@ model Process {
   status            Status?            @relation(fields: [id_status], references: [id_status])
   entity            Entity             @relation(fields: [id_entity], references: [id_entity])
 
+  @@index([process_number])
   @@map("process")
 }
 
 model Document {
   id_document       Int                @id @default(autoincrement()) @map("id_document")
   id_type_document  Int
-  name              String             @db.VarChar(200)
+  name              String             @db.VarChar(100)
   description       String?            @db.Text
   date_request      DateTime?          @db.Date
   date_reception    DateTime?          @db.Date
-  name_manager      String?            @db.VarChar(150)
+  name_manager      String?            @db.VarChar(100)
   process_code      Int
   document_link     String?            @db.VarChar(255)
   id_status         Int
@@ -241,12 +243,13 @@ model Document {
   detail_invoice    DetailInvoice[]
   process_documents ProcessDocuments[]
 
+  @@index([process_code])
   @@map("document")
 }
 
 model PayType {
   id_pay_type    Int             @id @default(autoincrement()) @map("id_pay_type")
-  name           String          @db.VarChar(150)
+  name           String          @db.VarChar(100)
   description    String?         @db.Text
   created_at     DateTime        @default(now()) @map("created_at")
   updated_at     DateTime        @updatedAt @map("updated_at")
@@ -259,8 +262,8 @@ model DetailInvoice {
   id_detail_invoice    Int       @id @default(autoincrement()) @map("id_detail_invoice")
   process_code         Int
   total_value          Decimal   @db.Decimal(10, 2)
-  invoice_number       String    @db.VarChar(25)
-  id_entity               Int
+  invoice_number       String    @unique @db.VarChar(25)
+  id_entity            Int
   description          String?   @db.Text
   emission_date        DateTime? @db.Date
   expiration_date      DateTime? @db.Date
@@ -276,6 +279,7 @@ model DetailInvoice {
   document             Document  @relation(fields: [id_document], references: [id_document])
   entity               Entity    @relation(fields: [id_entity], references: [id_entity])
 
+  @@index([invoice_number])
   @@map("detail_invoice")
 }
 
@@ -289,35 +293,111 @@ model ProcessDocuments {
   process             Process  @relation(fields: [process_code], references: [id_process])
   document            Document @relation(fields: [id_document], references: [id_document])
 
+  @@index([process_code, id_document])
   @@map("process_documents")
 }
 
 model ProcessReview {
   id_process_review Int      @id @default(autoincrement()) @map("id_process_review")
-  is_active         Boolean
-  is_selected       Boolean
+  is_active         Boolean  @default(true)
+  is_selected       Boolean  @default(false)
   process_code      Int
   created_at        DateTime @default(now()) @map("created_at")
   updated_at        DateTime @updatedAt @map("updated_at")
-  process       Process  @relation(fields: [process_code], references: [id_process])
+  process           Process  @relation(fields: [process_code], references: [id_process])
 
+  @@index([process_code])
   @@map("process_review")
 }
 
-model AccessTokenModel {
-  id_access_token     Int      @id @default(autoincrement()) @map("id_access_token")
-  id_user             Int
-  type_authentication String   @db.VarChar(50)
-  provider            String   @db.VarChar(50)
-  provider_account    String   @db.VarChar(50)
-  access_token        String   @db.Text
-  expires_at          Int
-  token_type          String   @db.VarChar(255)
-  scope               String   @db.VarChar(255)
-  token               String   @db.Text
-  created_at          DateTime @default(now()) @map("created_at")
-  updated_at          DateTime @updatedAt @map("updated_at")
-  user                User     @relation(fields: [id_user], references: [id_user])
+model TelegramChat {
+  id_telegram_chat Int      @id @default(autoincrement()) @map("id_telegram_chat")
+  chat_id          String   @unique @db.VarChar(50)
+  phone            String   @db.VarChar(15)
+  created_at       DateTime @default(now()) @map("created_at")
+  updated_at       DateTime @updatedAt @map("updated_at")
 
+  @@index([chat_id])
+  @@map("telegram_chat")
+}
+
+model LogsNotifications {
+  id_logs_notification String   @id @default(uuid()) @map("id_logs_notification")
+  log                  String   @db.Text
+  message              String   @db.Text
+  subject              String   @db.VarChar(150)
+  phone                String?  @db.VarChar(15)
+  email                String?  @db.VarChar(100)
+  module               String   @db.VarChar(100)
+  event_type           String   @db.VarChar(50)
+  user_id              String?
+  user_email           String?  @db.VarChar(100)
+  ip_address           String?  @db.VarChar(45)
+  user_agent           String?  @db.Text
+  status_code          Int?
+  kafka_topic          String?  @db.VarChar(100)
+  correlation_id       String?  @db.VarChar(100)
+  created_at           DateTime @default(now()) @map("created_at")
+  updated_at           DateTime @updatedAt @map("updated_at")
+
+  @@index([user_id])
+  @@index([event_type])
+  @@index([created_at])
+  @@index([user_email])
+  @@map("logs_notification")
+}
+
+model AccessTokenModel {
+  id_access_token     String              @id @default(uuid()) @map("id_access_token")
+  id_user             String              @map("id_user")
+  type_authentication String              @db.VarChar(50)
+  provider            String              @db.VarChar(50)
+  provider_account    String              @db.VarChar(255)
+  access_token        String              @db.Text
+  expires_at          DateTime
+  token_type          String              @db.VarChar(50)
+  scope               String              @db.VarChar(255)
+  created_at          DateTime            @default(now()) @map("created_at")
+  updated_at          DateTime            @updatedAt @map("updated_at")
+  user                User                @relation(fields: [id_user], references: [id_user])
+  revoke_tokens       RevokeToken[]
+  refresh_tokens      RefreshTokenModel[]
+
+  @@index([id_user])
   @@map("access_token")
+}
+
+model RefreshTokenModel {
+  id_refresh_token String            @id @default(uuid()) @map("id_refresh_token")
+  id_user          String            @map("id_user")
+  id_access_token  String?           @map("id_access_token")
+  refresh_token    String            @db.VarChar(255)
+  revoked          Boolean           @default(false)
+  expires_at       DateTime
+  created_at       DateTime          @default(now()) @map("created_at")
+  updated_at       DateTime          @updatedAt @map("updated_at")
+  user             User              @relation(fields: [id_user], references: [id_user])
+  access_token     AccessTokenModel? @relation(fields: [id_access_token], references: [id_access_token])
+
+  @@index([id_user])
+  @@index([refresh_token])
+  @@index([id_access_token])
+  @@map("refresh_token")
+}
+
+model RevokeToken {
+  id_revoke_token String            @id @default(uuid()) @map("id_revoke_token")
+  jti             String            @map("jti") @db.VarChar(255)
+  reason          String?           @db.VarChar(255)
+  id_user         String?           @map("id_user")
+  id_access_token String?           @map("id_access_token")
+  created_at      DateTime          @default(now()) @map("created_at")
+  updated_at      DateTime          @updatedAt @map("updated_at")
+  user            User?             @relation(fields: [id_user], references: [id_user])
+  access_token    AccessTokenModel? @relation(fields: [id_access_token], references: [id_access_token])
+
+  @@index([jti])
+  @@index([id_user])
+  @@index([id_access_token])
+  @@map("revoke_token")
 }

@@ -70,10 +70,10 @@ export class UserService implements InterfaceUserUseCaseService {
   }
 
   async update(
-    idUser: number,
+    idUser: string,
     userRequest: CreateUserRequest,
   ): Promise<UserResponse | null> {
-    if (!idUser || isNaN(idUser)) {
+    if (!idUser || idUser.trim() === '') {
       throw new RpcException({
         statusCode: statusCode.BAD_REQUEST,
         message: 'ID is required to update a user.',
@@ -116,8 +116,8 @@ export class UserService implements InterfaceUserUseCaseService {
     return await this.userRepository.update(idUser, userModel);
   }
 
-  async findById(idUser: number): Promise<UserResponse | null> {
-    if (!idUser || isNaN(idUser)) {
+  async findById(idUser: string): Promise<UserResponse | null> {
+    if (!idUser || idUser.trim() === '') {
       throw new RpcException({
         statusCode: statusCode.BAD_REQUEST,
         message: 'ID is required to find a user.',
@@ -140,8 +140,8 @@ export class UserService implements InterfaceUserUseCaseService {
     return await this.userRepository.findAll();
   }
 
-  async delete(idUser: number): Promise<boolean> {
-    if (!idUser || isNaN(idUser)) {
+  async delete(idUser: string): Promise<boolean> {
+    if (!idUser || idUser.trim() === '') {
       throw new RpcException({
         statusCode: statusCode.BAD_REQUEST,
         message: 'ID is required to delete a user.',

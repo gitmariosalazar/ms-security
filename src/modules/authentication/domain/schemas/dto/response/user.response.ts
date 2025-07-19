@@ -1,10 +1,11 @@
 export interface AuthUserResponse {
-  idUser: number;
+  idUser: string;
   userEmail: string;
   userPassword: string;
   firstName: string;
   lastName: string;
   userActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  userType?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
