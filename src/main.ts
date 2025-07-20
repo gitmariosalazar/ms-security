@@ -48,6 +48,6 @@ async function bootstrap() {
     new RpcCustomExceptionFilterMicoserviceSecurity(),
   );
   await microservices.listen();
-  logger.log(`🚀🎉 The Authentication microservice is listening to KAFKA...`);
+  logger.log(`🚀🎉 The Authentication microservice is listening to KAFKA...✅`);
 }
 bootstrap();
