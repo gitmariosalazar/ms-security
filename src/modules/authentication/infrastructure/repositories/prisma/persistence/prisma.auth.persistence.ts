@@ -15,6 +15,91 @@ import { PrismaService } from 'src/shared/prisma/service/prisma.service';
 export class AuthPrismaImplementation implements InterfaceAuthRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async updateAccessToken(
+    tokenModel: AccessTokenModel,
+  ): Promise<TokenResponse | null> {
+    console.log(tokenModel);
+    try {
+      const accessTokenUpdated =
+        await this.prismaService.accessTokenModel.update({
+          where: {
+            id_access_token: tokenModel.getIdAccessToken(),
+          },
+          data: {
+            id_user: tokenModel.getIdUser(),
+            type_authentication: tokenModel.getTypeAuthentication(),
+            provider: tokenModel.getProvider(),
+            provider_account: tokenModel.getProviderAccount(),
+            access_token: tokenModel.getAccessToken(),
+            expires_at: new Date(tokenModel.getExpiresAt()),
+            token_type: tokenModel.getTokenType(),
+            scope: tokenModel.getScope(),
+          },
+          include: {
+            user: true,
+          },
+        });
+
+      return {
+        idAccessToken: accessTokenUpdated.id_access_token,
+        idUser: accessTokenUpdated.id_user,
+        typeAuthentication: accessTokenUpdated.type_authentication,
+        provider: accessTokenUpdated.provider,
+        providerAccount: accessTokenUpdated.provider_account,
+        accessToken: accessTokenUpdated.access_token,
+        refreshToken: '',
+        expiresAt: Math.floor(
+          new Date(accessTokenUpdated.expires_at).getTime() / 1000,
+        ),
+        tokenType: accessTokenUpdated.token_type,
+        scope: accessTokenUpdated.scope,
+        user: {
+          idUser: accessTokenUpdated.user.id_user,
+          userEmail: accessTokenUpdated.user.user_email,
+          userPassword: accessTokenUpdated.user.user_password,
+          firstName: accessTokenUpdated.user.first_name,
+          lastName: accessTokenUpdated.user.last_name,
+          userActive: accessTokenUpdated.user.user_active,
+          userType: accessTokenUpdated.user.id_user_type,
+        },
+        createdAt: accessTokenUpdated.created_at,
+        updatedAt: accessTokenUpdated.updated_at,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findRevokeTokenByIdUserAndJti(
+    idUser: string,
+    jti: string,
+  ): Promise<RevokeTokenResponse | null> {
+    try {
+      const revokeTokenFound = await this.prismaService.revokeToken.findFirst({
+        where: {
+          id_user: idUser,
+          jti: jti,
+        },
+      });
+
+      if (!revokeTokenFound) {
+        return null;
+      }
+
+      return {
+        idRevokeToken: revokeTokenFound.id_revoke_token,
+        idAccessToken: revokeTokenFound.id_access_token,
+        idUser: revokeTokenFound.id_user,
+        reason: revokeTokenFound.reason,
+        jti: revokeTokenFound.jti,
+        createdAt: revokeTokenFound.created_at,
+        updatedAt: revokeTokenFound.updated_at,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async signin(tokenModel: AccessTokenModel): Promise<TokenResponse | null> {
     try {
       const accessTokenCreated =

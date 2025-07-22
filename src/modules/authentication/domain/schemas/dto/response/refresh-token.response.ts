@@ -4,6 +4,7 @@ export interface RefreshTokenResponse {
   idAccessToken: string;
   refreshToken: string;
   revoked: boolean;
+  accessToken?: string;
   expiresAt: Date;
   createdAt?: Date;
   updatedAt?: Date;

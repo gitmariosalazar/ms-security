@@ -9,11 +9,18 @@ import { RevokeTokenResponse } from '../schemas/dto/response/revoke-token.respon
 export interface InterfaceAuthRepository {
   signin(tokenModel: AccessTokenModel): Promise<TokenResponse | null>;
   signup(tokenModel: AccessTokenModel): Promise<TokenResponse | null>;
+  updateAccessToken(
+    tokenModel: AccessTokenModel,
+  ): Promise<TokenResponse | null>;
   findUserByEmail(userEmail: string): Promise<AuthUserResponse | null>;
   createRefreshToken(
     refreshToken: RefreshTokenModel,
   ): Promise<RefreshTokenResponse | null>;
   createRevokeToken(
     revokeToken: RevokeTokenModel,
+  ): Promise<RevokeTokenResponse | null>;
+  findRevokeTokenByIdUserAndJti(
+    idUser: string,
+    jti: string,
   ): Promise<RevokeTokenResponse | null>;
 }

@@ -371,7 +371,7 @@ model RefreshTokenModel {
   id_refresh_token String            @id @default(uuid()) @map("id_refresh_token")
   id_user          String            @map("id_user")
   id_access_token  String?           @map("id_access_token")
-  refresh_token    String            @db.VarChar(255)
+  refresh_token    String            @db.VarChar(510)
   revoked          Boolean           @default(false)
   expires_at       DateTime
   created_at       DateTime          @default(now()) @map("created_at")

@@ -18,16 +18,29 @@ import { UserTypeModel } from 'src/modules/user-type/domain/schemas/model/user-t
 import { AuthUserResponse } from '../../domain/schemas/dto/response/user.response';
 import { environments } from 'src/settings/environments/environments';
 import { User } from '../../domain/schemas/dto/response/user.auth.response';
-import { IUserPayload } from '../interfaces/user.payload.interface';
+import {
+  IRefreshTokenPayload,
+  IUserPayload,
+} from '../interfaces/user.payload.interface';
 import { RevokeTokenModel } from '../../domain/schemas/model/revoke-token.model';
 import { RefreshTokenModel } from '../../domain/schemas/model/refresh-token.model';
 import { CreateRefreshTokenRequest } from '../../domain/schemas/dto/request/create.refresh-token.request';
 import { RefreshTokenResponse } from '../../domain/schemas/dto/response/refresh-token.response';
 import { CreateRevokeTokenRequest } from '../../domain/schemas/dto/request/create.revoke-token.request';
 import { RevokeTokenResponse } from '../../domain/schemas/dto/response/revoke-token.response';
+import { SessionResponse } from '../../domain/schemas/dto/response/session.response';
+import { VerifyTokenRequest } from '../../domain/schemas/dto/request/verify-token.request';
 
 @Injectable()
 export class AuthService implements InterfaceAuthUseCase {
+  private readonly expireAtAccessToken: [Date, string] = [
+    new Date(Date.now() + 5 * 60 * 1000),
+    '5m',
+  ];
+  private readonly expireAtRefreshToken: [Date, string] = [
+    new Date(Date.now() + 35 * 60 * 1000),
+    '35m',
+  ];
   constructor(
     @Inject('AuthRepository')
     private readonly authRepository: InterfaceAuthRepository,
@@ -36,7 +49,150 @@ export class AuthService implements InterfaceAuthUseCase {
     private readonly jwtService: JwtService,
   ) {}
 
-  async verifyToken(auth_token: string): Promise<boolean> {
+  async updateAccessToken(
+    signInRequest: SignInRequest,
+  ): Promise<TokenResponse | null> {
+    try {
+      const user = await this.userRepository.findById(signInRequest.email);
+      if (!user) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'User not found.',
+        });
+      }
+
+      const payload: IUserPayload = AuthMapper.toUserPayload(user);
+      const newAccessToken = this.jwtService.sign(payload, {
+        secret: environments.secretKey,
+        expiresIn: this.expireAtAccessToken[1], // 5 minutes expiration
+        algorithm: 'HS256',
+      });
+
+      const updateAccessTokenModel: AccessTokenModel = AuthMapper.toTokenModel(
+        signInRequest,
+        user,
+      );
+
+      const updatedToken = await this.authRepository.updateAccessToken(
+        updateAccessTokenModel,
+      );
+
+      return updatedToken;
+    } catch (error) {
+      console.error(`Error updating access token: ${error.message}`);
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message: 'Failed to update access token.',
+      });
+    }
+  }
+
+  async refreshToken(
+    refresh_token: string,
+  ): Promise<RefreshTokenResponse | null> {
+    try {
+      if (!refresh_token || refresh_token.trim() === '') {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Refresh token is required.',
+        });
+      }
+
+      const payload: IRefreshTokenPayload = await this.jwtService.verifyAsync(
+        refresh_token,
+        {
+          secret: environments.secretKey,
+        },
+      );
+
+      if (!payload || !payload.idUser || !payload.idAccessToken) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Invalid refresh token payload.',
+        });
+      }
+
+      const isRevokedToken: RevokeTokenResponse | null =
+        await this.authRepository.findRevokeTokenByIdUserAndJti(
+          payload.idUser,
+          payload.idAccessToken,
+        );
+
+      if (isRevokedToken !== null) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Refresh token has been revoked.',
+        });
+      }
+
+      const user = await this.userRepository.findById(payload.idUser);
+
+      if (!user) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'User not found for the provided refresh token.',
+        });
+      }
+
+      const { userType, ...rest } = user;
+
+      const resultUser = { ...rest, userType: userType.idUserType };
+      console.log(resultUser);
+
+      const newPayload: IUserPayload = AuthMapper.toUserPayload(resultUser);
+
+      const newAccessToken = this.jwtService.sign(newPayload, {
+        secret: environments.secretKey,
+        expiresIn: this.expireAtAccessToken[1], // 5 minutes expiration
+        algorithm: 'HS256',
+      });
+
+      const signInRequest: SignInRequest = new SignInRequest(
+        resultUser.userEmail,
+        '',
+      );
+
+      const updateAccessTokenModel: AccessTokenModel = AuthMapper.toTokenModel(
+        signInRequest,
+        resultUser,
+      );
+      updateAccessTokenModel.setIdAccessToken(payload.idAccessToken);
+      updateAccessTokenModel.setAccessToken(newAccessToken);
+      updateAccessTokenModel.setExpiresAt(this.expireAtAccessToken[0]);
+      updateAccessTokenModel.setCreatedAt(new Date());
+      const updatedToken = await this.authRepository.updateAccessToken(
+        updateAccessTokenModel,
+      );
+
+      if (!updatedToken) {
+        throw new RpcException({
+          statusCode: statusCode.INTERNAL_SERVER_ERROR,
+          message: 'Error updating access token, please try again later.',
+        });
+      }
+
+      const refreshTokenResponse: RefreshTokenResponse = {
+        idRefreshToken: payload.idAccessToken,
+        idUser: payload.idUser,
+        idAccessToken: updatedToken.idAccessToken,
+        refreshToken: refresh_token,
+        revoked: false,
+        accessToken: updatedToken.accessToken,
+        expiresAt: new Date(payload.exp * 1000), // 5 minutes expiration
+      };
+      return refreshTokenResponse;
+    } catch (error) {
+      console.error(`Error refreshing token: ${error.message}`);
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message: 'Refresh token is not valid or has expired.',
+      });
+    }
+  }
+
+  async findRevokeTokenByIdUserAndJti(
+    auth_token: string,
+  ): Promise<RevokeTokenResponse | null> {
     try {
       if (!auth_token || auth_token.trim() === '') {
         throw new RpcException({
@@ -45,10 +201,92 @@ export class AuthService implements InterfaceAuthUseCase {
         });
       }
 
+      const decodeToken = await this.jwtService.decode(auth_token);
+
+      if (!decodeToken || !decodeToken['idUser'] || !decodeToken['jti']) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Invalid token payload.',
+        });
+      }
+
+      const revokeToken =
+        await this.authRepository.findRevokeTokenByIdUserAndJti(
+          decodeToken['idUser'],
+          decodeToken['jti'],
+        );
+
+      if (!revokeToken) {
+        return null;
+      }
+
+      return revokeToken;
+    } catch (error) {
+      console.error(`Error finding revoke token: ${error.message}`);
+      throw new RpcException({
+        statusCode: statusCode.INTERNAL_SERVER_ERROR,
+        message: 'Error finding revoke token.',
+      });
+    }
+  }
+
+  async getSession(
+    verifyToken: VerifyTokenRequest,
+  ): Promise<SessionResponse | null> {
+    try {
+      if (!verifyToken.auth_token || verifyToken.auth_token.trim() === '') {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Token is required.',
+        });
+      }
+
       // Verify the token using the JWT service
-      const verify = await this.jwtService.verifyAsync(auth_token, {
+      const verify = await this.jwtService.decode(verifyToken.auth_token);
+      if (!verify) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Invalid token.',
+        });
+      }
+
+      return {
+        sessionId: verify.sessionId,
+        userId: verify.idUser,
+        createdAt: new Date(verify.iat * 1000), // Convert seconds to milliseconds
+        expiresAt: new Date(verify.exp * 1000), // Convert seconds to milliseconds
+        ipAddress: verifyToken.ipAddress || 'Unknown',
+        location: {
+          country: 'Unknown',
+          city: 'Unknown',
+          region: 'Unknown',
+        },
+      };
+    } catch (error) {
+      console.error(`Error getting session: ${error.message}`);
+      throw new RpcException({
+        statusCode: statusCode.UNAUTHORIZED,
+        message: 'Session retrieval failed.',
+      });
+    }
+  }
+
+  async verifyToken(
+    verifyToken: VerifyTokenRequest,
+  ): Promise<SessionResponse | null> {
+    try {
+      if (!verifyToken.auth_token || verifyToken.auth_token.trim() === '') {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Token is required.',
+        });
+      }
+
+      // Verify the token using the JWT service
+      const verify = await this.jwtService.verifyAsync(verifyToken.auth_token, {
         secret: environments.secretKey,
       });
+      console.log(verify);
       if (!verify) {
         throw new RpcException({
           statusCode: statusCode.UNAUTHORIZED,
@@ -57,12 +295,23 @@ export class AuthService implements InterfaceAuthUseCase {
       }
       console.log(verify);
       console.log(verify!!);
-      return true; // Return true if the token is valid
+      return {
+        sessionId: verify.sessionId,
+        userId: verify.idUser,
+        createdAt: new Date(verify.iat * 1000), // Convert seconds to milliseconds
+        expiresAt: new Date(verify.exp * 1000), // Convert seconds to milliseconds
+        ipAddress: verifyToken.ipAddress || 'Unknown',
+        location: {
+          country: 'Unknown',
+          city: 'Unknown',
+          region: 'Unknown',
+        },
+      };
     } catch (error) {
       console.error(`Error verifying token: ${error.message}`);
       throw new RpcException({
         statusCode: statusCode.UNAUTHORIZED,
-        message: 'Token is not valid or has expired. ❌',
+        message: 'Token is not valid or has expired-----1. ❌',
       });
     }
   }
@@ -160,12 +409,12 @@ export class AuthService implements InterfaceAuthUseCase {
 
       const accessToken = this.jwtService.sign(payload, {
         secret: environments.secretKey,
-        expiresIn: '1h',
+        expiresIn: this.expireAtAccessToken[1],
         algorithm: 'HS256',
       });
 
       tokenModel.setAccessToken(accessToken);
-      tokenModel.setExpiresAt(new Date(Date.now() + 60000 * 60)); // 1 hour expiration
+      tokenModel.setExpiresAt(this.expireAtAccessToken[0]);
       tokenModel.setCreatedAt(new Date());
       tokenModel.setUpdatedAt(new Date());
       tokenModel.setIdUser(user.idUser);
@@ -185,13 +434,12 @@ export class AuthService implements InterfaceAuthUseCase {
       // Generate refresh token
       const refreshToken = this.jwtService.sign(
         {
-          user: {
-            id: user.idUser,
-          },
+          idUser: user.idUser,
+          idAccessToken: tokenResponse.idAccessToken,
         },
         {
           secret: environments.secretKey,
-          expiresIn: '1h', // 1 hour expiration
+          expiresIn: this.expireAtRefreshToken[1],
           algorithm: 'HS256',
         },
       );
@@ -202,7 +450,7 @@ export class AuthService implements InterfaceAuthUseCase {
           tokenResponse.idAccessToken,
           refreshToken,
           false,
-          new Date(Date.now() + 3600000), // 1 hour expiration
+          this.expireAtRefreshToken[0],
         );
 
       const refreshTokenModel: RefreshTokenModel =
@@ -299,14 +547,14 @@ export class AuthService implements InterfaceAuthUseCase {
 
       const accessToken = this.jwtService.sign(payload, {
         secret: environments.secretKey,
-        expiresIn: '1h', // 1 hour expiration
+        expiresIn: this.expireAtAccessToken[1], // 5 minutes expiration
         // expiresIn: '1m', // 1 minute expiration for testing
         algorithm: 'HS256',
       });
 
       tokenModel.setAccessToken(accessToken);
       tokenModel.setTokenType('Bearer');
-      tokenModel.setExpiresAt(new Date(Date.now() + 3600000)); // 1 hour expiration
+      tokenModel.setExpiresAt(this.expireAtAccessToken[0]);
       tokenModel.setCreatedAt(new Date());
       tokenModel.setUpdatedAt(new Date());
       tokenModel.setIdUser(createdUser.idUser);
@@ -325,13 +573,12 @@ export class AuthService implements InterfaceAuthUseCase {
 
       const refreshToken = this.jwtService.sign(
         {
-          user: {
-            id: createdUser.idUser,
-          },
+          idUser: createdUser.idUser,
+          idAccessToken: tokenResponse.idAccessToken,
         },
         {
           secret: environments.secretKey,
-          expiresIn: '1h', // 1 hour expiration
+          expiresIn: this.expireAtRefreshToken[1],
           algorithm: 'HS256',
         },
       );
@@ -342,7 +589,7 @@ export class AuthService implements InterfaceAuthUseCase {
           tokenResponse.idAccessToken,
           refreshToken,
           false,
-          new Date(Date.now() + 3600000), // 1 hour expiration
+          this.expireAtRefreshToken[0],
         );
 
       const refreshTokenModel: RefreshTokenModel =
@@ -419,7 +666,4 @@ export class AuthService implements InterfaceAuthUseCase {
       throw error;
     }
   }
-}
-function ms(arg0: string) {
-  throw new Error('Function not implemented.');
 }

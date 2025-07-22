@@ -9,3 +9,10 @@ export interface IUserPayload {
   userType: string;
   jti: string; // JWT ID
 }
+
+export interface IRefreshTokenPayload {
+  idUser: string;
+  idAccessToken: string;
+  iat: number; // Issued at time
+  exp: number; // Expiration time
+}
