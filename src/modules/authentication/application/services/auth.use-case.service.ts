@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InterfaceAuthUseCase } from '../usecases/auth.use-case.interface';
 import { InterfaceAuthRepository } from '../../domain/contracts/auth.interface.repository';
 import { InterfaceUserRepository } from 'src/modules/users/domain/contracts/user.repository.interface';
@@ -30,16 +30,17 @@ import { CreateRevokeTokenRequest } from '../../domain/schemas/dto/request/creat
 import { RevokeTokenResponse } from '../../domain/schemas/dto/response/revoke-token.response';
 import { SessionResponse } from '../../domain/schemas/dto/response/session.response';
 import { VerifyTokenRequest } from '../../domain/schemas/dto/request/verify-token.request';
+import { isIP } from 'net';
 
 @Injectable()
 export class AuthService implements InterfaceAuthUseCase {
   private readonly expireAtAccessToken: [Date, string] = [
     new Date(Date.now() + 5 * 60 * 1000),
-    '5m',
+    '1m',
   ];
   private readonly expireAtRefreshToken: [Date, string] = [
     new Date(Date.now() + 35 * 60 * 1000),
-    '35m',
+    '5m',
   ];
   constructor(
     @Inject('AuthRepository')
@@ -230,6 +231,8 @@ export class AuthService implements InterfaceAuthUseCase {
     }
   }
 
+  /*
+
   async getSession(
     verifyToken: VerifyTokenRequest,
   ): Promise<SessionResponse | null> {
@@ -270,7 +273,90 @@ export class AuthService implements InterfaceAuthUseCase {
       });
     }
   }
+*/
 
+  async getSession(
+    verifyToken: VerifyTokenRequest,
+  ): Promise<SessionResponse | null> {
+    const logger = new Logger('SessionService');
+
+    try {
+      if (!verifyToken.auth_token || verifyToken.auth_token.trim() === '') {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Token is required.',
+        });
+      }
+
+      if (!isIP(verifyToken.ipAddress)) {
+        throw new RpcException({
+          statusCode: statusCode.BAD_REQUEST,
+          message: 'Invalid IP address format.',
+        });
+      }
+
+      if (
+        verifyToken.refresh_token &&
+        verifyToken.refresh_token.trim() === ''
+      ) {
+        throw new RpcException({
+          statusCode: statusCode.BAD_REQUEST,
+          message: 'Refresh token cannot be empty.',
+        });
+      }
+
+      // Verify the token using the JWT service
+      const decodedAuthToken = await this.jwtService.decode(
+        verifyToken.auth_token,
+      );
+
+      if (!decodedAuthToken) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Invalid token.',
+        });
+      }
+      console.log(`---------- Decoded Auth Token:`);
+      console.log(decodedAuthToken);
+      console.log(`---------- Decoded Auth Token ----------`);
+
+      const isExpiredToken: boolean = decodedAuthToken.exp < Date.now() / 1000;
+
+      const decodedRefreshToken = await this.jwtService.decode(
+        verifyToken.refresh_token,
+      );
+
+      if (!decodedRefreshToken) {
+        throw new RpcException({
+          statusCode: statusCode.UNAUTHORIZED,
+          message: 'Invalid refresh token.',
+        });
+      }
+
+      console.log(`---------- Decoded Refresh Token:`);
+      console.log(decodedRefreshToken);
+      console.log(`---------- Decoded Refresh Token ----------`);
+      const isExpiredRefreshToken: boolean =
+        decodedRefreshToken.exp < Date.now() / 1000;
+      return {
+        sessionId: decodedAuthToken.jti, // Usar jti como sessionId
+        userId: decodedAuthToken.idUser,
+        createdAt: new Date(decodedAuthToken.iat * 1000),
+        expiresAt: new Date(decodedAuthToken.exp * 1000),
+        ipAddress: verifyToken.ipAddress || 'Unknown',
+        location: {
+          country: 'Unknown',
+          city: 'Unknown',
+          region: 'Unknown',
+        },
+        refreshTokenValid: !isExpiredRefreshToken, // Refresh token es válido
+        accessTokenValid: !isExpiredToken, // Access token es válido
+      };
+    } catch (error) {
+      logger.error(`Error in getSession: ${error.message}`);
+      throw error;
+    }
+  }
   async verifyToken(
     verifyToken: VerifyTokenRequest,
   ): Promise<SessionResponse | null> {

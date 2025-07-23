@@ -9,4 +9,6 @@ export interface SessionResponse {
     city: string;
     region: string;
   };
+  refreshTokenValid?: boolean;
+  accessTokenValid?: boolean;
 }

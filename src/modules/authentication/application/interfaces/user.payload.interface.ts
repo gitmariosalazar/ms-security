@@ -8,6 +8,8 @@ export interface IUserPayload {
   date: Date;
   userType: string;
   jti: string; // JWT ID
+  iat?: number; // Issued at time
+  exp?: number; // Expiration time
 }
 
 export interface IRefreshTokenPayload {
