@@ -35,12 +35,12 @@ import { isIP } from 'net';
 @Injectable()
 export class AuthService implements InterfaceAuthUseCase {
   private readonly expireAtAccessToken: [Date, string] = [
-    new Date(Date.now() + 5 * 60 * 1000),
-    '1m',
+    new Date(Date.now() + 10 * 60 * 1000), // 1 minute expiration
+    '10m',
   ];
   private readonly expireAtRefreshToken: [Date, string] = [
-    new Date(Date.now() + 35 * 60 * 1000),
-    '5m',
+    new Date(Date.now() + 60 * 60 * 1000),
+    '1h',
   ];
   constructor(
     @Inject('AuthRepository')
@@ -341,8 +341,10 @@ export class AuthService implements InterfaceAuthUseCase {
       return {
         sessionId: decodedAuthToken.jti, // Usar jti como sessionId
         userId: decodedAuthToken.idUser,
-        createdAt: new Date(decodedAuthToken.iat * 1000),
-        expiresAt: new Date(decodedAuthToken.exp * 1000),
+        createdAtAccessToken: new Date(decodedAuthToken.iat * 1000),
+        expiresAtAccessToken: new Date(decodedAuthToken.exp * 1000),
+        createdAtRefreshToken: new Date(decodedRefreshToken.iat * 1000),
+        expiresAtRefreshToken: new Date(decodedRefreshToken.exp * 1000),
         ipAddress: verifyToken.ipAddress || 'Unknown',
         location: {
           country: 'Unknown',
@@ -379,13 +381,11 @@ export class AuthService implements InterfaceAuthUseCase {
           message: 'Invalid token.',
         });
       }
-      console.log(verify);
-      console.log(verify!!);
       return {
         sessionId: verify.sessionId,
         userId: verify.idUser,
-        createdAt: new Date(verify.iat * 1000), // Convert seconds to milliseconds
-        expiresAt: new Date(verify.exp * 1000), // Convert seconds to milliseconds
+        createdAtAccessToken: new Date(verify.iat * 1000), // Convert seconds to milliseconds
+        expiresAtAccessToken: new Date(verify.exp * 1000), // Convert seconds to milliseconds
         ipAddress: verifyToken.ipAddress || 'Unknown',
         location: {
           country: 'Unknown',
