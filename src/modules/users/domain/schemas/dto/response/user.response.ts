@@ -7,6 +7,6 @@ export interface UserResponse {
   lastName: string;
   userActive: boolean;
   userType: UserTypeResponse;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

@@ -35,12 +35,12 @@ import { isIP } from 'net';
 @Injectable()
 export class AuthService implements InterfaceAuthUseCase {
   private readonly expireAtAccessToken: [Date, string] = [
-    new Date(Date.now() + 10 * 60 * 1000), // 1 minute expiration
-    '10m',
+    new Date(Date.now() + 10 * 5 * 60 * 1000), // 50 minutes expiration
+    '50m',
   ];
   private readonly expireAtRefreshToken: [Date, string] = [
-    new Date(Date.now() + 60 * 60 * 1000),
-    '1h',
+    new Date(Date.now() + 60 * 5 * 60 * 1000),
+    '5h',
   ];
   constructor(
     @Inject('AuthRepository')
