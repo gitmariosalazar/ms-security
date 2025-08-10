@@ -13,10 +13,10 @@ export class AuthAapter {
       provider: accessTokenModel.getProvider(),
       providerAccount: accessTokenModel.getProviderAccount(),
       accessToken: accessTokenModel.getAccessToken(),
-      expiresAt: accessTokenModel.getExpiresAt(),
+      refreshToken: '',
+      expiresAt: accessTokenModel.getExpiresAt().getTime(),
       tokenType: accessTokenModel.getTokenType(),
       scope: accessTokenModel.getScope(),
-      token: accessTokenModel.getToken(),
       user: {
         idUser: accessTokenModel.getIdUser(),
         userEmail: user.user_email,

@@ -18,7 +18,7 @@ model UserType {
   description      String?          @map("description") @db.Text
   created_at       DateTime         @default(now()) @map("created_at")
   updated_at       DateTime         @updatedAt @map("updated_at")
-  users            User[]           @relation("UserTypeUsers")
+  roleUsers        RoleUser[]       @relation("UserTypeRoleUsers")
   role_permissions RolePermission[] @relation("UserTypeRolePermissions")
 
   @@map("user_type")
@@ -51,20 +51,29 @@ model RolePermission {
 model User {
   id_user        String              @id @default(uuid()) @map("id_user")
   user_email     String              @unique @map("user_email") @db.VarChar(100)
-  user_password  String              @map("user_password") @db.VarChar(255) // Encriptado en la aplicación
+  user_password  String              @map("user_password") @db.VarChar(255)
   first_name     String              @map("first_name") @db.VarChar(50)
   last_name      String              @map("last_name") @db.VarChar(50)
   user_active    Boolean             @default(true) @map("user_active")
-  id_user_type   Int                 @map("id_user_type")
   created_at     DateTime            @default(now()) @map("created_at")
   updated_at     DateTime            @updatedAt @map("updated_at")
-  user_type      UserType            @relation("UserTypeUsers", fields: [id_user_type], references: [id_user_type])
   access_tokens  AccessTokenModel[]
   revoke_tokens  RevokeToken[]
   refresh_tokens RefreshTokenModel[]
+  roleUsers      RoleUser[]          @relation("RoleUsersUsers")
 
   @@index([user_email])
   @@map("users")
+}
+
+model RoleUser {
+  idRoleUser   Int      @id @default(autoincrement()) @map("id_role_user")
+  id_user      String   @map("id_user") @db.VarChar(191)
+  id_user_type Int      @map("id_user_type")
+  user         User     @relation("RoleUsersUsers", fields: [id_user], references: [id_user])
+  userType     UserType @relation("UserTypeRoleUsers", fields: [id_user_type], references: [id_user_type])
+
+  @@map("role_user")
 }
 
 // Notification
