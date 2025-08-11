@@ -1,16 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InterfaceUserUseCaseService } from '../usecases/user.use-case.interface';
+import { RpcException } from '@nestjs/microservices';
+import { InterfaceUserTypeRepository } from 'src/modules/user-type/domain/contracts/user-type.repository.interface';
+import { statusCode } from 'src/settings/environments/status-code';
+import { validateFields } from 'src/shared/utils/validators/fields.validators';
 import { InterfaceUserRepository } from '../../domain/contracts/user.repository.interface';
 import { CreateUserRequest } from '../../domain/schemas/dto/request/create.user.request';
 import { UserResponse } from '../../domain/schemas/dto/response/user.response';
 import { UserModel } from '../../domain/schemas/model/user.model';
 import { UserMapper } from '../mapper/user.mapper';
-import { validateFields } from 'src/shared/utils/validators/fields.validators';
-import { RpcException } from '@nestjs/microservices';
-import { statusCode } from 'src/settings/environments/status-code';
-import { InterfaceUserTypeRepository } from 'src/modules/user-type/domain/contracts/user-type.repository.interface';
-import { UserTypeResponse } from 'src/modules/user-type/domain/schemas/dto/response/user-type.response';
-import { UserTypeModel } from 'src/modules/user-type/domain/schemas/model/user-type.model';
+import { InterfaceUserUseCaseService } from '../usecases/user.use-case.interface';
 @Injectable()
 export class UserService implements InterfaceUserUseCaseService {
   constructor(
@@ -42,27 +40,8 @@ export class UserService implements InterfaceUserUseCaseService {
         });
       }
 
-      const userType: UserTypeResponse = await this.userTypeRepository.findById(
-        userRequest.userTypeId,
-      );
-
-      if (!userType) {
-        throw new RpcException({
-          statusCode: statusCode.NOT_FOUND,
-          message: `User type with ID ${userRequest.userTypeId} not found.`,
-        });
-      }
-
-      const userTypeModel: UserTypeModel = new UserTypeModel(
-        userType.idUserType,
-        userType.name,
-        userType.description,
-      );
-
-      const userModel: UserModel = UserMapper.fromCreateUserRequestToUserModel(
-        userRequest,
-        userTypeModel,
-      );
+      const userModel: UserModel =
+        UserMapper.fromCreateUserRequestToUserModel(userRequest);
       return await this.userRepository.create(userModel);
     } catch (error) {
       throw error;
@@ -92,27 +71,9 @@ export class UserService implements InterfaceUserUseCaseService {
         message: missingFieldsMessages,
       });
     }
-    const userType: UserTypeResponse = await this.userTypeRepository.findById(
-      userRequest.userTypeId,
-    );
 
-    if (!userType) {
-      throw new RpcException({
-        statusCode: statusCode.NOT_FOUND,
-        message: `User type with ID ${userRequest.userTypeId} not found.`,
-      });
-    }
-
-    const userTypeModel: UserTypeModel = new UserTypeModel(
-      userType.idUserType,
-      userType.name,
-      userType.description,
-    );
-
-    const userModel: UserModel = UserMapper.fromUpdateUserRequestToUserModel(
-      userRequest,
-      userTypeModel,
-    );
+    const userModel: UserModel =
+      UserMapper.fromUpdateUserRequestToUserModel(userRequest);
     return await this.userRepository.update(idUser, userModel);
   }
 

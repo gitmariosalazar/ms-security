@@ -5,6 +5,7 @@ import { UserResponse } from 'src/modules/users/domain/schemas/dto/response/user
 import { UserModel } from 'src/modules/users/domain/schemas/model/user.model';
 import { statusCode } from 'src/settings/environments/status-code';
 import { PrismaService } from 'src/shared/prisma/service/prisma.service';
+import { UserPrismaAdapter } from '../adapters/user.prisma.adapter';
 
 @Injectable()
 export class UserPrismaImplementation implements InterfaceUserRepository {
@@ -29,32 +30,12 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
           user_password: userModel.getUserPassword(),
           first_name: userModel.getFirstName(),
           last_name: userModel.getLastName(),
-          user_type: {
-            connect: {
-              id_user_type: userModel.getUserType().getIdUserType(),
-            },
-          },
         },
         include: {
-          user_type: true,
+          roleUsers: true,
         },
       });
-      return {
-        idUser: user.id_user,
-        userEmail: user.user_email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-        userActive: user.user_active,
-        userType: {
-          idUserType: user.id_user_type,
-          name: user.user_type.name,
-          description: user.user_type.description,
-          createdAt: user.user_type.created_at,
-          updatedAt: user.user_type.updated_at,
-        },
-      };
+      return UserPrismaAdapter.fromPrismaToUserResponse(user);
     } catch (error) {
       throw error;
     }
@@ -82,33 +63,13 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
           user_email: userModel.getUserEmail(),
           first_name: userModel.getFirstName(),
           last_name: userModel.getLastName(),
-          user_type: {
-            connect: {
-              id_user_type: userModel.getUserType().getIdUserType(),
-            },
-          },
         },
         include: {
-          user_type: true,
+          roleUsers: true,
         },
       });
 
-      return {
-        idUser: user.id_user,
-        userEmail: user.user_email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-        userActive: user.user_active,
-        userType: {
-          idUserType: user.id_user_type,
-          name: user.user_type.name,
-          description: user.user_type.description,
-          createdAt: user.user_type.created_at,
-          updatedAt: user.user_type.updated_at,
-        },
-      };
+      return UserPrismaAdapter.fromPrismaToUserResponse(user);
     } catch (error) {
       throw error;
     }
@@ -119,7 +80,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
       const userFound = await this.prismaService.user.findUnique({
         where: { id_user: idUser },
         include: {
-          user_type: true,
+          roleUsers: true,
         },
       });
 
@@ -130,22 +91,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
         });
       }
 
-      return {
-        idUser: userFound.id_user,
-        userEmail: userFound.user_email,
-        firstName: userFound.first_name,
-        lastName: userFound.last_name,
-        createdAt: userFound.created_at,
-        updatedAt: userFound.updated_at,
-        userActive: userFound.user_active,
-        userType: {
-          idUserType: userFound.id_user_type,
-          name: userFound.user_type.name,
-          description: userFound.user_type.description,
-          createdAt: userFound.user_type.created_at,
-          updatedAt: userFound.user_type.updated_at,
-        },
-      };
+      return UserPrismaAdapter.fromPrismaToUserResponse(userFound);
     } catch (error) {
       throw error;
     }
@@ -156,7 +102,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
       const userFound = await this.prismaService.user.findFirst({
         where: { user_email: userEmail },
         include: {
-          user_type: true,
+          roleUsers: true,
         },
       });
 
@@ -167,22 +113,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
         });
       }
 
-      return {
-        idUser: userFound.id_user,
-        userEmail: userFound.user_email,
-        firstName: userFound.first_name,
-        lastName: userFound.last_name,
-        createdAt: userFound.created_at,
-        updatedAt: userFound.updated_at,
-        userActive: userFound.user_active,
-        userType: {
-          idUserType: userFound.id_user_type,
-          name: userFound.user_type.name,
-          description: userFound.user_type.description,
-          createdAt: userFound.user_type.created_at,
-          updatedAt: userFound.user_type.updated_at,
-        },
-      };
+      return UserPrismaAdapter.fromPrismaToUserResponse(userFound);
     } catch (error) {
       throw error;
     }
@@ -215,7 +146,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
     try {
       const users = await this.prismaService.user.findMany({
         include: {
-          user_type: true,
+          roleUsers: true,
         },
       });
 
@@ -226,22 +157,9 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
         });
       }
 
-      return users.map((user) => ({
-        idUser: user.id_user,
-        userEmail: user.user_email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        createdAt: user.created_at,
-        updatedAt: user.updated_at,
-        userActive: user.user_active,
-        userType: {
-          idUserType: user.id_user_type,
-          name: user.user_type.name,
-          description: user.user_type.description,
-          createdAt: user.user_type.created_at,
-          updatedAt: user.user_type.updated_at,
-        },
-      }));
+      return users.map((user) =>
+        UserPrismaAdapter.fromPrismaToUserResponse(user),
+      );
     } catch (error) {
       throw error;
     }

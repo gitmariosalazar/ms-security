@@ -49,7 +49,7 @@ export class UpdateUserRequest {
     type: Boolean,
   })
   userActive: boolean;
-
+  /*
   @ApiProperty({
    description: `The ID of the user type`,
    type: Number,
@@ -57,6 +57,7 @@ export class UpdateUserRequest {
    example: 1,
  })
   userTypeId: number;
+  */
 
   constructor(
     userEmail: string,
@@ -64,13 +65,13 @@ export class UpdateUserRequest {
     firstName: string,
     lastName: string,
     userActive: boolean,
-    userTypeId: number,
+    //userTypeId: number,
   ) {
     this.userEmail = userEmail;
     this.userPassword = userPassword;
     this.firstName = firstName;
     this.lastName = lastName;
     this.userActive = userActive;
-    this.userTypeId = userTypeId;
+    //this.userTypeId = userTypeId;
   }
 }

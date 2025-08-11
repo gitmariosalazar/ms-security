@@ -37,7 +37,6 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
         userModel.getUserPassword(),
         userModel.getFirstName(),
         userModel.getLastName(),
-        userModel.getUserType().getIdUserType(),
       ];
       const result = await this.mysqlService.query(query, params);
       if (result.length === 0) {
@@ -145,7 +144,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
           user.firstName,
           user.lastName,
           user.userActive,
-          new UserTypeModel(user.idUserType, user.name, user.description),
+          null,
         ),
       );
     } catch (error) {
@@ -182,7 +181,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
           user.firstName,
           user.lastName,
           user.userActive,
-          new UserTypeModel(user.idUserType, user.name, user.description),
+          null,
         ),
       );
     } catch (error) {
@@ -240,7 +239,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
             user.firstName,
             user.lastName,
             user.userActive,
-            new UserTypeModel(user.idUserType, user.name, user.description),
+            null,
           ),
         ),
       );
