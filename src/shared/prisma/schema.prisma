@@ -70,6 +70,8 @@ model RoleUser {
   idRoleUser   Int      @id @default(autoincrement()) @map("id_role_user")
   id_user      String   @map("id_user") @db.VarChar(191)
   id_user_type Int      @map("id_user_type")
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
   user         User     @relation("RoleUsersUsers", fields: [id_user], references: [id_user])
   userType     UserType @relation("UserTypeRoleUsers", fields: [id_user_type], references: [id_user_type])
 
