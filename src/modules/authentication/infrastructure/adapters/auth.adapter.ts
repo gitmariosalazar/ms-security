@@ -1,7 +1,7 @@
 import { TokenResponse } from '../../domain/schemas/dto/response/token.response';
 import { AccessTokenModel } from '../../domain/schemas/model/token.model';
 
-export class AuthAapter {
+export class AuthAdapter {
   static fromAccessTokenModelToAccessTokenResponse(
     accessTokenModel: AccessTokenModel,
     user: any,

@@ -10,6 +10,7 @@ import { RevokeTokenModel } from 'src/modules/authentication/domain/schemas/mode
 import { AccessTokenModel } from 'src/modules/authentication/domain/schemas/model/token.model';
 import { statusCode } from 'src/settings/environments/status-code';
 import { PrismaService } from 'src/shared/prisma/service/prisma.service';
+import { AuthPrismaAdapter } from '../adapters/auth.prisma.adapter';
 
 @Injectable()
 export class AuthPrismaImplementation implements InterfaceAuthRepository {
@@ -36,35 +37,17 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
             scope: tokenModel.getScope(),
           },
           include: {
-            user: true,
+            user: {
+              include: {
+                roleUsers: true,
+              },
+            },
           },
         });
 
-      return {
-        idAccessToken: accessTokenUpdated.id_access_token,
-        idUser: accessTokenUpdated.id_user,
-        typeAuthentication: accessTokenUpdated.type_authentication,
-        provider: accessTokenUpdated.provider,
-        providerAccount: accessTokenUpdated.provider_account,
-        accessToken: accessTokenUpdated.access_token,
-        refreshToken: '',
-        expiresAt: Math.floor(
-          new Date(accessTokenUpdated.expires_at).getTime() / 1000,
-        ),
-        tokenType: accessTokenUpdated.token_type,
-        scope: accessTokenUpdated.scope,
-        user: {
-          idUser: accessTokenUpdated.user.id_user,
-          userEmail: accessTokenUpdated.user.user_email,
-          userPassword: accessTokenUpdated.user.user_password,
-          firstName: accessTokenUpdated.user.first_name,
-          lastName: accessTokenUpdated.user.last_name,
-          userActive: accessTokenUpdated.user.user_active,
-          userType: accessTokenUpdated.user.id_user_type,
-        },
-        createdAt: accessTokenUpdated.created_at,
-        updatedAt: accessTokenUpdated.updated_at,
-      };
+      return AuthPrismaAdapter.fromAccessTokenModelToTokenResponse(
+        accessTokenUpdated,
+      );
     } catch (error) {
       throw error;
     }
@@ -115,7 +98,11 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
             scope: tokenModel.getScope(),
           },
           include: {
-            user: true,
+            user: {
+              include: {
+                roleUsers: true,
+              },
+            },
           },
         });
 
@@ -126,31 +113,9 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
         });
       }
 
-      return {
-        idAccessToken: accessTokenCreated.id_access_token,
-        idUser: accessTokenCreated.id_user,
-        typeAuthentication: accessTokenCreated.type_authentication,
-        provider: accessTokenCreated.provider,
-        providerAccount: accessTokenCreated.provider_account,
-        accessToken: accessTokenCreated.access_token,
-        refreshToken: '',
-        expiresAt: Math.floor(
-          new Date(accessTokenCreated.expires_at).getTime() / 1000,
-        ),
-        tokenType: accessTokenCreated.token_type,
-        scope: accessTokenCreated.scope,
-        user: {
-          idUser: accessTokenCreated.user.id_user,
-          userEmail: accessTokenCreated.user.user_email,
-          userPassword: accessTokenCreated.user.user_password,
-          firstName: accessTokenCreated.user.first_name,
-          lastName: accessTokenCreated.user.last_name,
-          userActive: accessTokenCreated.user.user_active,
-          userType: accessTokenCreated.user.id_user_type,
-        },
-        createdAt: accessTokenCreated.created_at,
-        updatedAt: accessTokenCreated.updated_at,
-      };
+      return AuthPrismaAdapter.fromAccessTokenModelToTokenResponse(
+        accessTokenCreated,
+      );
     } catch (error) {
       throw error;
     }
@@ -173,7 +138,11 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
             scope: tokenModel.getScope(),
           },
           include: {
-            user: true,
+            user: {
+              include: {
+                roleUsers: true,
+              },
+            },
           },
         });
 
@@ -184,31 +153,9 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
         });
       }
 
-      return {
-        idAccessToken: accessTokenCreated.id_access_token,
-        idUser: accessTokenCreated.id_user,
-        typeAuthentication: accessTokenCreated.type_authentication,
-        provider: accessTokenCreated.provider,
-        providerAccount: accessTokenCreated.provider_account,
-        accessToken: accessTokenCreated.access_token,
-        expiresAt: Math.floor(
-          new Date(accessTokenCreated.expires_at).getTime() / 1000,
-        ),
-        tokenType: accessTokenCreated.token_type,
-        scope: accessTokenCreated.scope,
-        refreshToken: '',
-        user: {
-          idUser: accessTokenCreated.id_user,
-          userEmail: accessTokenCreated.user.user_email,
-          userPassword: accessTokenCreated.user.user_password,
-          firstName: accessTokenCreated.user.first_name,
-          lastName: accessTokenCreated.user.last_name,
-          userActive: accessTokenCreated.user.user_active,
-          userType: accessTokenCreated.user.id_user_type,
-        },
-        createdAt: accessTokenCreated.created_at,
-        updatedAt: accessTokenCreated.updated_at,
-      };
+      return AuthPrismaAdapter.fromAccessTokenModelToTokenResponse(
+        accessTokenCreated,
+      );
     } catch (error) {
       throw error;
     }
@@ -221,7 +168,7 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
           user_email: userEmail,
         },
         include: {
-          user_type: true,
+          roleUsers: true,
         },
       });
 
@@ -283,7 +230,11 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
             updated_at: new Date(),
           },
           include: {
-            user: true,
+            user: {
+              include: {
+                roleUsers: true,
+              },
+            },
           },
         });
       if (!accessTokenUpdated) {
@@ -292,31 +243,9 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
           message: 'Error refreshing token, please try again later.',
         });
       }
-      return {
-        idAccessToken: accessTokenUpdated.id_access_token,
-        idUser: accessTokenUpdated.id_user,
-        typeAuthentication: accessTokenUpdated.type_authentication,
-        provider: accessTokenUpdated.provider,
-        providerAccount: accessTokenUpdated.provider_account,
-        accessToken: accessTokenUpdated.access_token,
-        expiresAt: Math.floor(
-          new Date(accessTokenUpdated.expires_at).getTime() / 1000,
-        ),
-        tokenType: accessTokenUpdated.token_type,
-        scope: accessTokenUpdated.scope,
-        refreshToken: accessTokenUpdated.id_access_token,
-        user: {
-          idUser: accessTokenUpdated.user.id_user,
-          userEmail: accessTokenUpdated.user.user_email,
-          userPassword: accessTokenUpdated.user.user_password,
-          firstName: accessTokenUpdated.user.first_name,
-          lastName: accessTokenUpdated.user.last_name,
-          userActive: accessTokenUpdated.user.user_active,
-          userType: accessTokenUpdated.user.id_user_type,
-        },
-        createdAt: accessTokenUpdated.created_at,
-        updatedAt: accessTokenUpdated.updated_at,
-      };
+      return AuthPrismaAdapter.fromAccessTokenModelToTokenResponse(
+        accessTokenUpdated,
+      );
     } catch (error) {
       throw error;
     }

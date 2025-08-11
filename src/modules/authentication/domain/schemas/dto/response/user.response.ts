@@ -1,3 +1,5 @@
+import { RoleUserResponse } from 'src/modules/roles/domain/schemas/dto/response/role-user.response';
+
 export interface AuthUserResponse {
   idUser: string;
   userEmail: string;
@@ -5,7 +7,7 @@ export interface AuthUserResponse {
   firstName: string;
   lastName: string;
   userActive: boolean;
-  userType?: number;
+  roleUsers?: RoleUserResponse[];
   createdAt?: Date;
   updatedAt?: Date;
 }

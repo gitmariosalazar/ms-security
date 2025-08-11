@@ -135,12 +135,12 @@ export class AuthService implements InterfaceAuthUseCase {
         });
       }
 
-      const { userType, ...rest } = user;
+      //const { userType, ...rest } = user;
 
-      const resultUser = { ...rest, userType: userType.idUserType };
-      console.log(resultUser);
+      //const resultUser = { ...rest, userType: userType.idUserType };
+      //console.log(resultUser);
 
-      const newPayload: IUserPayload = AuthMapper.toUserPayload(resultUser);
+      const newPayload: IUserPayload = AuthMapper.toUserPayload(user);
 
       const newAccessToken = this.jwtService.sign(newPayload, {
         secret: environments.secretKey,
@@ -149,13 +149,13 @@ export class AuthService implements InterfaceAuthUseCase {
       });
 
       const signInRequest: SignInRequest = new SignInRequest(
-        resultUser.userEmail,
+        user.userEmail,
         '',
       );
 
       const updateAccessTokenModel: AccessTokenModel = AuthMapper.toTokenModel(
         signInRequest,
-        resultUser,
+        user,
       );
       updateAccessTokenModel.setIdAccessToken(payload.idAccessToken);
       updateAccessTokenModel.setAccessToken(newAccessToken);
@@ -609,14 +609,8 @@ export class AuthService implements InterfaceAuthUseCase {
         1,
       );
 
-      const userModel = UserMapper.fromCreateUserRequestToUserModel(
-        userRequest,
-        new UserTypeModel(
-          1,
-          'Default User Type',
-          'This is a default user type description.',
-        ),
-      );
+      const userModel =
+        UserMapper.fromCreateUserRequestToUserModel(userRequest);
 
       const createdUser = await this.userRepository.create(userModel);
       if (!createdUser) {

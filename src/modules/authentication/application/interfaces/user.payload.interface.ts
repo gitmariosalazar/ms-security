@@ -5,8 +5,8 @@ export interface IUserPayload {
   lastName: string;
   phoneNumber?: string;
   isActive: boolean;
+  roleUsers?: string[];
   date: Date;
-  userType: string;
   jti: string; // JWT ID
   iat?: number; // Issued at time
   exp?: number; // Expiration time

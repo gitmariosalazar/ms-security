@@ -51,7 +51,7 @@ export class AuthMapper {
       firstName: user.firstName,
       lastName: user.lastName,
       userActive: user.userActive,
-      userType: user.userType.idUserType,
+      roleUsers: user.roleUser,
     };
   }
 
@@ -64,7 +64,7 @@ export class AuthMapper {
       phoneNumber: user.phoneNumber,
       isActive: user.userActive,
       date: user.createdAt,
-      userType: user.userType,
+      roleUsers: user.roleUsers,
       jti: uuidv4(), // Generate a unique identifier for the JWT
     };
   }
