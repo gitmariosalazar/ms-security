@@ -606,7 +606,6 @@ export class AuthService implements InterfaceAuthUseCase {
         signUpRequest.firstName,
         signUpRequest.lastName,
         true,
-        1,
       );
 
       const userModel =
