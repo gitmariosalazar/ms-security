@@ -55,6 +55,7 @@ model User {
   first_name     String              @map("first_name") @db.VarChar(50)
   last_name      String              @map("last_name") @db.VarChar(50)
   user_active    Boolean             @default(true) @map("user_active")
+  phone_number   String?             @map("phone_number") @db.VarChar(15)
   created_at     DateTime            @default(now()) @map("created_at")
   updated_at     DateTime            @updatedAt @map("updated_at")
   access_tokens  AccessTokenModel[]

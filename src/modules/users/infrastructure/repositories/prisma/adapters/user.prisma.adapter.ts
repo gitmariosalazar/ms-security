@@ -15,6 +15,7 @@ export class UserPrismaAdapter {
       firstName: user.first_name,
       lastName: user.last_name,
       userActive: user.user_active,
+      phoneNumber: user.phone_number,
       roleUser:
         user.roleUsers?.map((role: any) => {
           return {

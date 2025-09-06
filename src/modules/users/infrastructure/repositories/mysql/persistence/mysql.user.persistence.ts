@@ -144,6 +144,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
           user.firstName,
           user.lastName,
           user.userActive,
+          user.phoneNumber,
           null,
         ),
       );
@@ -181,6 +182,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
           user.firstName,
           user.lastName,
           user.userActive,
+          user.phoneNumber,
           null,
         ),
       );
@@ -239,6 +241,7 @@ export class UserMySQLImplementation implements InterfaceUserRepository {
             user.firstName,
             user.lastName,
             user.userActive,
+            user.phoneNumber,
             null,
           ),
         ),

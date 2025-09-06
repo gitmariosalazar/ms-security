@@ -7,6 +7,7 @@ export class UserModel {
   private firstName: string;
   private lastName: string;
   private userActive: boolean;
+  private phoneNumber: string | null;
   private roleUser: RoleUserModel[] | null;
   private createdAt: Date;
   private updatedAt: Date;
@@ -18,6 +19,7 @@ export class UserModel {
     firstName: string,
     lastName: string,
     userActive: boolean,
+    phoneNumber: string | null,
     roleUser: RoleUserModel[],
     createdAt?: Date,
     updatedAt?: Date,
@@ -28,6 +30,7 @@ export class UserModel {
     this.firstName = firstName;
     this.lastName = lastName;
     this.userActive = userActive;
+    this.phoneNumber = phoneNumber;
     this.roleUser = roleUser;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
@@ -89,6 +92,15 @@ export class UserModel {
   setUpdatedAt(updatedAt: Date): void {
     this.updatedAt = updatedAt;
   }
+
+  getPhoneNumber(): string | null {
+    return this.phoneNumber;
+  }
+
+  setPhoneNumber(phoneNumber: string | null): void {
+    this.phoneNumber = phoneNumber;
+  }
+
   toJSON(): object {
     return {
       idUser: this.idUser,
@@ -97,6 +109,7 @@ export class UserModel {
       firstName: this.firstName,
       lastName: this.lastName,
       userActive: this.userActive,
+      phoneNumber: this.phoneNumber,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };

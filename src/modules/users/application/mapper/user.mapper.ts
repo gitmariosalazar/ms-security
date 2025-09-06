@@ -1,10 +1,7 @@
-import { RoleUserResponse } from './../../../roles/domain/schemas/dto/response/role-user.response';
-import { UserTypeModel } from 'src/modules/user-type/domain/schemas/model/user-type.model';
-import { CreateUserRequest } from '../../domain/schemas/dto/request/create.user.request';
-import { UserModel } from '../../domain/schemas/model/user.model';
 import { v4 as uuid } from 'uuid';
+import { CreateUserRequest } from '../../domain/schemas/dto/request/create.user.request';
 import { UserResponse } from '../../domain/schemas/dto/response/user.response';
-import { RoleUserModel } from 'src/modules/roles/domain/schemas/model/role-users.model';
+import { UserModel } from '../../domain/schemas/model/user.model';
 
 export class UserMapper {
   static fromCreateUserRequestToUserModel(
@@ -17,6 +14,8 @@ export class UserMapper {
       userRequest.firstName,
       userRequest.lastName,
       userRequest.userActive,
+      userRequest.phoneNumber,
+      [],
       null,
     );
   }
@@ -31,6 +30,8 @@ export class UserMapper {
       userRequest.firstName,
       userRequest.lastName,
       userRequest.userActive,
+      userRequest.phoneNumber,
+      [],
       null,
     );
   }
@@ -43,6 +44,8 @@ export class UserMapper {
       userResponse.firstName,
       userResponse.lastName,
       userResponse.userActive,
+      userResponse.phoneNumber,
+      [],
       null,
     );
   }

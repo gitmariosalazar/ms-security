@@ -44,4 +44,13 @@ export class SignUpRequest {
     format: 'text',
   })
   public lastName: string;
+
+  @ApiProperty({
+    example: '+593994532438',
+    description: 'Phone number of the user',
+    required: true,
+    type: String,
+    format: 'text',
+  })
+  public phoneNumber: string;
 }

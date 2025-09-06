@@ -5,6 +5,7 @@ export interface UserResponseSql {
   firstName: string;
   lastName: string;
   userActive: boolean;
+  phoneNumber: string;
   idUserType: number;
   name: string;
   description: string;

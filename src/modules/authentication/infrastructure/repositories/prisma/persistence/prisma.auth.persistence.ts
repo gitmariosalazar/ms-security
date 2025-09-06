@@ -185,6 +185,7 @@ export class AuthPrismaImplementation implements InterfaceAuthRepository {
         createdAt: userFound.created_at,
         updatedAt: userFound.updated_at,
         userActive: userFound.user_active,
+        phoneNumber: userFound.phone_number,
       };
     } catch (error) {
       throw error;

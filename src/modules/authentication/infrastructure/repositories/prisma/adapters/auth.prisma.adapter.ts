@@ -33,6 +33,7 @@ export class AuthPrismaAdapter {
         firstName: accessToken.user.first_name,
         lastName: accessToken.user.last_name,
         userActive: accessToken.user.user_active,
+        phoneNumber: accessToken.user.phone_number,
         roleUsers: accessToken.user.roleUsers.map((role) => ({
           idRoleUser: role.idRoleUser,
           idUser: role.id_user,

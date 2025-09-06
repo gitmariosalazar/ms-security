@@ -30,6 +30,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
           user_password: userModel.getUserPassword(),
           first_name: userModel.getFirstName(),
           last_name: userModel.getLastName(),
+          phone_number: userModel.getPhoneNumber(),
         },
         include: {
           roleUsers: true,
@@ -63,6 +64,7 @@ export class UserPrismaImplementation implements InterfaceUserRepository {
           user_email: userModel.getUserEmail(),
           first_name: userModel.getFirstName(),
           last_name: userModel.getLastName(),
+          phone_number: userModel.getPhoneNumber(),
         },
         include: {
           roleUsers: true,

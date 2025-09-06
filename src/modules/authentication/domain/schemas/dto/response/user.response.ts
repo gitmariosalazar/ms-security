@@ -7,6 +7,7 @@ export interface AuthUserResponse {
   firstName: string;
   lastName: string;
   userActive: boolean;
+  phoneNumber: string;
   roleUsers?: RoleUserResponse[];
   createdAt?: Date;
   updatedAt?: Date;

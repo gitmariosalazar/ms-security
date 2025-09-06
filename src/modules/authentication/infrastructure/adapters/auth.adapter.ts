@@ -24,6 +24,7 @@ export class AuthAdapter {
         firstName: user.first_name,
         lastName: user.last_name,
         userActive: user.user_active,
+        phoneNumber: user.phone_number,
       },
       createdAt: accessTokenModel.getCreatedAt(),
       updatedAt: accessTokenModel.getUpdatedAt(),

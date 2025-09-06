@@ -26,6 +26,7 @@ export class UserService implements InterfaceUserUseCaseService {
         'userPassword',
         'firstName',
         'lastName',
+        'phoneNumber',
       ];
 
       const missingFieldsMessages: string[] = validateFields(
@@ -59,7 +60,12 @@ export class UserService implements InterfaceUserUseCaseService {
       });
     }
 
-    const requiredFields: string[] = ['userEmail', 'firstName', 'lastName'];
+    const requiredFields: string[] = [
+      'userEmail',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+    ];
     const missingFieldsMessages: string[] = validateFields(
       userRequest,
       requiredFields,

@@ -6,6 +6,7 @@ export interface UserResponse {
   firstName: string;
   lastName: string;
   userActive: boolean;
+  phoneNumber: string;
   roleUser: RoleUserResponse[];
   createdAt?: Date;
   updatedAt?: Date;

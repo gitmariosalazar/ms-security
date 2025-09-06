@@ -48,6 +48,15 @@ export class CreateUserRequest {
     type: Boolean,
   })
   userActive: boolean;
+
+  @ApiProperty({
+    description: 'The phone number of the user',
+    example: '+593994532438',
+    required: false,
+    type: String,
+  })
+  phoneNumber: string | null;
+
   /*
   @ApiProperty({
     description: `The ID of the user type`,
@@ -64,6 +73,7 @@ export class CreateUserRequest {
     firstName: string,
     lastName: string,
     userActive: boolean,
+    phoneNumber: string | null,
     //userTypeId: number,
   ) {
     this.userEmail = userEmail;
@@ -71,6 +81,7 @@ export class CreateUserRequest {
     this.firstName = firstName;
     this.lastName = lastName;
     this.userActive = userActive;
+    this.phoneNumber = phoneNumber;
     //this.userTypeId = userTypeId;
   }
 }

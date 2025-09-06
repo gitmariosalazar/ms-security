@@ -51,7 +51,10 @@ export class AuthMapper {
       firstName: user.firstName,
       lastName: user.lastName,
       userActive: user.userActive,
+      phoneNumber: user.phoneNumber,
       roleUsers: user.roleUser,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 

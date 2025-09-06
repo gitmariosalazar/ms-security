@@ -9,6 +9,7 @@ export class UserAdapter {
       firstName: userModel.getFirstName(),
       lastName: userModel.getLastName(),
       userActive: userModel.isUserActive(),
+      phoneNumber: userModel.getPhoneNumber(),
       roleUser: userModel.getRoleUser().map((role) => {
         return {
           idRoleUser: role.getIdRoleUser(),
